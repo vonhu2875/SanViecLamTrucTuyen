@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+from django.conf.global_settings import AUTH_USER_MODEL
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,7 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'recruitments.apps.RecruitmentsConfig',
+    'ckeditor',
+    'ckeditor_uploader',
+    'rest_framework',
+    'django_filters',
+    'oauth2_provider'
 ]
+
+CKEDITOR_UPLOAD_PATH = 'images/uploads/'
+
+
+AUTH_USER_MODEL = 'recruitments.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -74,10 +87,16 @@ WSGI_APPLICATION = 'recruitmentapis.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'recruitmentdb',
+        'USER': 'root',
+        'PASSWORD': '123456',
+        'HOST': '' # mặc định localhost
     }
 }
+
+import pymysql
+pymysql.install_as_MySQLdb()
 
 
 # Password validation
