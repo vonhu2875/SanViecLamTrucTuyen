@@ -10,8 +10,8 @@ class SimpleUserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         request = self.context.get('request')
-        if instance.avatar and request:
-            data['avatar'] = request.build_absolute_uri(instance.avatar.url)
+        if instance.avatar:
+            data['avatar'] = instance.avatar.url
         return data
 
 class UserSerializer(SimpleUserSerializer):
@@ -25,15 +25,20 @@ class UserSerializer(SimpleUserSerializer):
         }
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        request = self.context.get('request')
-        if instance.avatar and request:
-            data['avatar'] = request.build_absolute_uri(instance.avatar.url)
+        # request = self.context.get('request')
+        if instance.avatar:
+            data['avatar'] = instance.avatar.url
         return data
 
     def validate_role(self, role):
         if role.__eq__('admin'):
             raise serializers.ValidationError("Không được chọn role Admin")
         return role
+
+    def validate_avatar(self, avatar):
+        if not avatar:
+            raise serializers.ValidationError("Avatar không được để trống")
+        return avatar
 
     def create(self, validated_data):
         user = User(**validated_data)

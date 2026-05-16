@@ -17,4 +17,4 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
             s = serializers.SimpleUserSerializer(u, data=request.data)
             s.is_valid(raise_exception=True)
             u = s.save()
-        return Response(serializers.UserSerializer(u , context={'request': request}).data, status=status.HTTP_200_OK)
+        return Response(serializers.UserSerializer(u).data, status=status.HTTP_200_OK)
