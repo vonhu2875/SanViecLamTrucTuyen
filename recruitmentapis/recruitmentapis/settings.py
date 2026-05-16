@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'rest_framework',
     'django_filters',
-    'oauth2_provider'
+    'oauth2_provider',
+    'drf_yasg',
 ]
 
 CKEDITOR_UPLOAD_PATH = 'images/uploads/'
@@ -90,7 +91,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'recruitmentdb',
         'USER': 'root',
-        'PASSWORD': '123456',
+        'PASSWORD': 'Nhu...10c11c12cDHc',
         'HOST': '' # mặc định localhost
     }
 }
@@ -98,6 +99,19 @@ DATABASES = {
 import pymysql
 pymysql.install_as_MySQLdb()
 
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name="dqrfckaek",
+    api_key="437884531811869",
+    api_secret="Bd3xRrxodvxmSl4QrgcVqUedoZE"
+)
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -139,3 +153,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CLIENT_ID = 'MiyqKOGOgCh8ORgMo1HC3Q96SjD9uDBBWJbiSmLj'
+CLIENT_SECRET = '9tmGcYfUP7eoqSp7qYO1zrTxVJEUgnTEE88bSsmbTbpNYlU3RmG0var59vQNzoySOloiBNDv5jqS978OwcQ8FwTn0ikYl8pPqROYWWUCiId5oDuWZiriIVaoIEm5aLZj'
