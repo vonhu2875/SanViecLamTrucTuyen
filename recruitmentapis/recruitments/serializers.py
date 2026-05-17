@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from recruitments.models import User
+from recruitments.models import User, Company, Application, SavedJob
+
 
 class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,3 +50,50 @@ class UserSerializer(SimpleUserSerializer):
         user.save()
 
         return user
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Company
+        fields = [
+            'id', 'name', 'description', 'logo',
+            'address', 'website', 'is_approved',
+            'created_date', 'updated_date'
+        ]
+        read_only_fields = ['is_approved', 'created_date', 'updated_date']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.logo:
+            data['logo'] = instance.logo.url
+        return data
+
+class ApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Application
+        fields = [
+            'id', 'job', 'cv_file', 'cover_letter',
+            'status', 'employer_comment', 'created_date'
+        ]
+        read_only_fields = ['status', 'employer_comment', 'created_date']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.cv_file:
+            data['cv_file'] = instance.cv_file.url
+        return data
+
+class ApplicationReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Application
+        fields = ['status', 'employer_comment']
+
+class SavedJobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedJob
+        fields = ['id', 'job', 'created_date']
+        read_only_fields = ['created_date']
+
+
+
+
+

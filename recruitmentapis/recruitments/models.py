@@ -33,7 +33,7 @@ class Company(BaseModel):
     logo = CloudinaryField('avatar', null=True, blank=True)
     address = models.CharField(max_length=255)
     website = models.URLField(null=True,blank=True)
-    #Thuộc tính kiểm soát quền đăng tin của công ty phía tuyển dụng
+    #Thuộc tính kiểm soát quyền đăng tin của công ty phía tuyển dụng
     is_approved = models.BooleanField(default=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='company')
     def __str__(self):

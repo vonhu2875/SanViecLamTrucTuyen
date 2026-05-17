@@ -91,7 +91,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'recruitmentdb',
         'USER': 'root',
-        'PASSWORD': 'Nhu...10c11c12cDHc',
+        'PASSWORD': 'root',
         'HOST': '' # mặc định localhost
     }
 }
