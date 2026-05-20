@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from recruitments.models import User, Company, Application, Job, Category
+from recruitments.models import User, Company, Application, Job, Category, Skill
+
 
 class ItemSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
@@ -105,6 +106,10 @@ class JobSimpleSerializer(serializers.ModelSerializer):
             'id', 'title', 'location', 'salary_min', 'salary_max',
             'deadline', 'is_featured', 'employer', 'category'
         ]
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = ['id', 'name']
 
 class JobDetailSerializer(JobSimpleSerializer):
     category = serializers.PrimaryKeyRelatedField(
@@ -112,11 +117,12 @@ class JobDetailSerializer(JobSimpleSerializer):
         required=True,
         write_only=True
     )
+    skills = SkillSerializer(many=True, read_only=True)
     class Meta:
         model = JobSimpleSerializer.Meta.model
         fields = JobSimpleSerializer.Meta.fields + [
             'description', 'requirements', 'benefits',
-            'experience_required', 'created_date', 'updated_date'
+            'experience_required', 'created_date', 'updated_date', 'skills'
         ]
         read_only_fields = ['created_date', 'updated_date']
 
@@ -150,6 +156,10 @@ class ApplicationReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = ['status', 'employer_comment']
+
+
+
+
 
 # Cho thống kê của Nhà tuyển dụng
 class EmployerStatsSerializer(serializers.Serializer):
