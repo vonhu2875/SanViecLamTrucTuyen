@@ -5,15 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="543fcce0-98d0-41f8-bc69-bfc30dbddb05" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/recruitments/paginators.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/recruitments/perms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitmentapis/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitmentapis/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitments/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitments/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitments/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitments/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitments/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
