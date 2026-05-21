@@ -27,7 +27,12 @@ SECRET_KEY = 'django-insecure-oimbv&m_w2zbw#t_&r3+v0g00b20die%09x3**0(qn=#m+#3n9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '10.0.2.2',     # Cho phép máy ảo Android Emulator
+    '192.168.88.*',  # Cho phép dải IP mạng Wi-Fi nhà bạn (thay theo dải IP thật của bạn)
+]
 
 
 # Application definition

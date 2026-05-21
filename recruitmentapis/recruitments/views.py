@@ -38,14 +38,14 @@ class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIV
         serializer.save(user=self.request.user)
 
 class ApplicationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
-    #serializer_class = serializers.ApplicationSerializer
+    serializer_class = serializers.ApplicationSerializer
     parser_classes = [parsers.MultiPartParser]  # upload cv_file lên Cloudinary
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_serializer_class(self):
-        if self.action == 'review':
-            return serializers.ApplicationReviewSerializer
-        return serializers.ApplicationSerializer
+    # def get_serializer_class(self):
+    #     if self.action == 'review':
+    #         return serializers.ApplicationReviewSerializer
+    #     return serializers.ApplicationSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -55,7 +55,7 @@ class ApplicationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Create
         elif user.role.__eq__('employer'):
             # Employer thấy CV nộp vào job của công ty mình
             return Application.objects.filter(job__employer__user=user, active=True)
-        return Application.objects.none()
+        return Application.objects.none() # xem ở bên view hay seri
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -71,16 +71,17 @@ class ApplicationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Create
         if not request.user.role.__eq__('employer'):
             raise PermissionDenied("Chỉ nhà tuyển dụng mới được đánh giá hồ sơ.")
 
-        application = generics.get_object_or_404(Application, pk=pk, active=True)
-
+        #application = generics.get_object_or_404(Application, pk=pk, active=True)
+        application = self.get_object().filter(pk=pk, active=True)
         # Kiểm tra application này có thuộc công ty của employer không
+        #Thử ghi đè lại lớp permission_class để xét quyền
         if application.job.employer.user != request.user:
             raise PermissionDenied("Bạn không có quyền đánh giá đơn này.")
 
         s = serializers.ApplicationReviewSerializer(application, data=request.data, partial=True)
         s.is_valid(raise_exception=True)
         s.save()
-        return Response(serializers.ApplicationSerializer(application).data)
+        return Response(serializers.ApplicationSerializer(application).data, status=status.HTTP_200_OK)
 
 class SavedJobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     serializer_class = serializers.SavedJobSerializer
