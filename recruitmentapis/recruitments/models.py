@@ -30,7 +30,7 @@ class User(AbstractUser):
 class Company(BaseModel):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    logo = CloudinaryField('avatar', null=True, blank=True)
+    logo = CloudinaryField('avatar')
     address = models.CharField(max_length=255)
     website = models.URLField(null=True,blank=True)
     #Thuộc tính kiểm soát quyền đăng tin của công ty phía tuyển dụng
@@ -66,7 +66,7 @@ class Job(BaseModel):
     is_featured = models.BooleanField(default=False)
     skills = models.ManyToManyField(Skill,related_name='jobs',blank=True)
     employer = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='jobs')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='jobs')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=False, related_name='jobs')
     class Meta:
         ordering = ['-created_date']
     def __str__(self):
@@ -122,10 +122,14 @@ class Payment(BaseModel):
         ('failed', 'Failed'),
     ]
 
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='payments')
-    method = models.CharField(max_length=50,choices=METHOD_CHOICES)
-    amount = models.DecimalField(max_digits=12,decimal_places=2)
-    description = models.CharField(max_length=255,blank=True,null=True)
-    status = models.CharField(max_length=20,choices=STATUS_CHOICES,default='pending')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='payments', null=True, blank=True)
+
+    method = models.CharField(max_length=50, choices=METHOD_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    description = models.CharField(max_length=255, blank=True, null=True)
+
     def __str__(self):
         return f"{self.user.username} - {self.amount}"
