@@ -1,4 +1,4 @@
-// src/components/common/CustomButton.js
+// components/common/CustomButton.js
 
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator } from 'react-native';

@@ -1,4 +1,4 @@
-// src/theme/globalStyles.js
+// theme/globalStyles.js
 
 import { StyleSheet, Platform } from 'react-native';
 import { COLORS } from '../constants/Colors'; // Đã import bảng màu tập trung

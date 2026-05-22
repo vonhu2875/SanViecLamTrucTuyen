@@ -4,25 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="543fcce0-98d0-41f8-bc69-bfc30dbddb05" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/recruitmentapis/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/recruitmentapis/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/recruitmentapis/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/recruitmentapis/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/recruitmentapis/.idea/recruitmentapis.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/recruitmentapis/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/recruitmentapis/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run_django.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitmentapis/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitmentapis/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitments/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitments/migrations/0001_initial.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/migrations/0002_alter_user_avatar.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/migrations/0003_alter_company_logo_alter_job_category.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/migrations/0004_payment_job.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitments/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recruitments/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitments/views.py" afterDir="false" />
-    </list>
+    <list default="true" id="543fcce0-98d0-41f8-bc69-bfc30dbddb05" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -62,24 +44,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.0001_initial.executor": "Run",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Shell Script.run_django.sh.executor": "Run",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "D:/CNLTHDTH/SanViecLamTrucTuyen/recruitmentapis",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "to.speed.mode.migration.done": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.0001_initial.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Shell Script.run_django.sh.executor&quot;: &quot;Run&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/CNLTHDTH/SanViecLamTrucTuyen/recruitmentapis&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Shell Script.run_django.sh">
     <configuration name="0001_initial" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="recruitmentapis" />

@@ -1,4 +1,4 @@
-// src/screens/auth/OnboardingScreen.js
+// screens/auth/OnboardingScreen.js
 
 import React, { useState, useRef } from 'react';
 import { View, Text, FlatList, TouchableOpacity, useWindowDimensions } from 'react-native';

@@ -1,4 +1,4 @@
-// src/services/authService.js
+// services/authService.js
 
 import axios from 'axios';
 import { ENDPOINTS } from '../configs/Apis';
@@ -17,6 +17,7 @@ export const registerUser = async (registerData) => {
     formData.append('role', registerData.role);
     
     // Nếu có avatar thì append thêm vào
+    // như xem cái này cần uncomment không nhe
     // formData.append('avatar', { uri: ..., name: ..., type: ... });
 
     // Gọi API POST tới Backend
@@ -52,7 +53,7 @@ export const loginUser = async (email, password) => {
 
     // Tạm giả định backend của bạn có endpoint đăng nhập tại: BASE_URL/users/login/ hoặc /api/token/
     // (Bạn có thể bổ sung ENDPOINTS.auth.login vào file Apis.js)
-    const LOGIN_URL = `${ENDPOINTS.auth.currentUser.replace('current-user/', 'login/')}`; 
+    const LOGIN_URL = `${ENDPOINTS.auth.currentUser.replace('current-user/', 'login/')}`; //như xem lại câu này đúng không nha
 
     const response = await axios.post(LOGIN_URL, payload, {
       headers: { 'Content-Type': 'application/json' }

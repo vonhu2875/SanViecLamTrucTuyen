@@ -1,8 +1,10 @@
-// src/utils/validators.js
+// utils/validators.js
 
 /**
  * Kiểm tra tính hợp lệ của Form Đăng ký
  */
+
+//File này hà làm để bỏ vô cho RegisterScreen.js gọn hơn mà bên đó hà chưa có add nó vô á như, bên đó hà xử lý trực tiếp, có gì chắc sửa lại add hàm này vào cho gọn
 export const validateRegisterForm = (formData, isEmployer) => {
   const { name, email, password, confirmPassword, companyName, taxCode } = formData;
 

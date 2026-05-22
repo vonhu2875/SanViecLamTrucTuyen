@@ -1,4 +1,4 @@
-// src/components/common/AppHeader.js
+// components/common/AppHeader.js
 
 import React from 'react';
 import { View, Text, Image } from 'react-native';
@@ -8,7 +8,7 @@ export default function AppHeader() {
   return (
     <View style={globalStyles.headerContainer}>
       <Image 
-        source={require('../../../assets/jobmate-logo.png')}
+        source={require('../../assets/jobmate-logo.png')}
         style={globalStyles.logo}
         resizeMode="contain"
       />

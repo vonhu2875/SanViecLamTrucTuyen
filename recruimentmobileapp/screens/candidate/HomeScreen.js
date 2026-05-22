@@ -1,4 +1,4 @@
-// src/screens/candidate/HomeScreen.js
+// screens/candidate/HomeScreen.js
 
 import React, { useContext, useState, useEffect } from 'react';
 import { View, FlatList, TouchableOpacity, Alert } from 'react-native';

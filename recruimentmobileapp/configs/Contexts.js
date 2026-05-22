@@ -1,4 +1,4 @@
-// src/configs/Contexts.js
+// configs/Contexts.js
 
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';

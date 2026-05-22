@@ -86,9 +86,9 @@ export default function LoginScreen({ navigation }) {
         {/* Phần Header / Logo */}
         <View style={globalStyles.headerContainer}>
           <Image 
-            source={require('../../../assets/jobmate-logo.png')} // Đảm bảo đường dẫn logo của bạn đúng, hoặc dùng icon tạm thời
+            source={require('../../assets/jobmate-logo.png')} // Đảm bảo đường dẫn logo của bạn đúng, hoặc dùng icon tạm thời
             style={globalStyles.logo}
-            defaultSource={require('../../../assets/jobmate-logo.png')}
+            defaultSource={require('../../assets/jobmate-logo.png')}
           />
           <Text style={globalStyles.appName}>JobMate</Text>
           <Text style={globalStyles.slogan}>Kết nối cơ hội – Dẫn lối thành công</Text>

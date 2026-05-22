@@ -1,4 +1,4 @@
-// src/constants/Colors.js
+// constants/Colors.js
 
 export const COLORS = {
   // --- MÀU THƯƠNG HIỆU (BRAND) ---

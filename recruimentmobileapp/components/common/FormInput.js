@@ -1,4 +1,4 @@
-// src/components/common/FormInput.js
+// components/common/FormInput.js
 
 import React from 'react';
 import { View, Text, TextInput } from 'react-native';

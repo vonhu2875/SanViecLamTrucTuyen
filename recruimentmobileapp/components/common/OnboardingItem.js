@@ -1,4 +1,4 @@
-// src/components/common/OnboardingItem.js
+// components/common/OnboardingItem.js
 
 import React from 'react';
 import { View, Text } from 'react-native';

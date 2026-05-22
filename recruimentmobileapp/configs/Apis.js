@@ -1,4 +1,4 @@
-// src/configs/Apis.js
+// configs/Apis.js
 
 // 1. Cấu hình Base URL kết nối đến Server Back-End của bạn
 // Lưu ý: Nếu chạy máy ảo Android, hãy thay localhost thành IP máy tính của bạn (Ví dụ: 192.168.1.X)
@@ -7,6 +7,7 @@ const BASE_URL = 'http://192.168.88.16:8081'; // Hoặc endpoint deploy thực t
 export const ENDPOINTS = {
   // Cụm 1: Quản lý Người dùng & Xác thực (/users/)
   auth: {
+    NavigatorLogin: `${BASE_URL}/o/token/`, // Đăng nhập (Candidate/Employer) [cite: 1, 2]
     register: `${BASE_URL}/users/`, // Đăng ký tài khoản (Candidate/Employer) [cite: 3, 4]
     currentUser: `${BASE_URL}/users/current-user/`, // Xem & Cập nhật thông tin chi tiết cá nhân [cite: 7, 10]
   },
