@@ -11,6 +11,10 @@ import MyUserReducer from './reducers/reducers';
 import Home from './screens/Home/Home';
 import Login from './screens/User/Login';
 import Profile from './screens/User/Profile';
+
+import Splash from './screens/User/Splash'; 
+import Onboarding from './screens/User/Onboarding';
+
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const Stack = createStackNavigator();
@@ -27,7 +31,11 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             {user === null ? (
-              <Stack.Screen name="login" component={Login} />
+              <>
+                <Stack.Screen name="splash" component={Splash} />
+                <Stack.Screen name="onboarding" component={Onboarding} />
+                <Stack.Screen name="login" component={Login} />
+              </>
             ) : 
             (
               <>

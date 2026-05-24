@@ -29,8 +29,8 @@ const Login = () => {
         try {
             setLoading(true);
             let res = await API.post(endpoints['login'], {
-                'client_id': 'L1nuUfCgVHJp5V4AWf9TvBbywG7jC42jIDpjunED',
-                'client_secret': 'Dh2oLMMRFFu7spU9TVfYN3lisyHKHhReqEflF3PnvgId73ckYiCGWeyQq6CDPEnKO1ALXq2YDNn0vFg7OKsEwKwLnAVOQmaDrTmcNdRZI2RGXiEAyQSoDfMoYdGX4owH',
+                'client_id': 'yLisKdKddyPvgj4g5QQTokzH9dluVNzopuCrgO0r',
+                'client_secret': 'TiMhZWHZM3bCLXmTXoqXuM6GN2S7DqIfLki5O9WawUl0Az5ej3rYoTIulp21Th0Z2MObNQvpSrsF5L8Ry2TFARCi0IFe8quSCRjXjeQqbv7Uhl3Dziij6euKRqit0heX',
                 'username': username.trim(),
                 'password': password,
                 'grant_type': 'password'

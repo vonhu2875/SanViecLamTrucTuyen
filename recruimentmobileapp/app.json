@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "recruimentmobileapp",
-    "slug": "recruimentmobileapp",
+    "name": "JOBMATE",
+    "slug": "jobmate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F2A0B6"
     },
     "ios": {
       "supportsTablet": true
@@ -17,7 +17,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#F2A0B6"
       }
     },
     "web": {
