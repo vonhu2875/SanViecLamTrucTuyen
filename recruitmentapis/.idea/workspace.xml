@@ -4,7 +4,36 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="543fcce0-98d0-41f8-bc69-bfc30dbddb05" name="Changes" comment="" />
+    <list default="true" id="543fcce0-98d0-41f8-bc69-bfc30dbddb05" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../recruimentmobileapp/components/Header.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../recruimentmobileapp/reducers/reducers.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../recruimentmobileapp/screens/Home/Home.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../recruimentmobileapp/screens/User/Login.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../recruimentmobileapp/screens/User/Profile.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../recruimentmobileapp/styles/Styles.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/../recruimentmobileapp/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/../recruimentmobileapp/app.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/components/common/AppHeader.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/components/common/CustomButton.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/components/common/FormInput.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/components/common/OnboardingItem.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/configs/Apis.js" beforeDir="false" afterPath="$PROJECT_DIR$/../recruimentmobileapp/configs/Apis.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/configs/Contexts.js" beforeDir="false" afterPath="$PROJECT_DIR$/../recruimentmobileapp/configs/Contexts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/navigation/AppNavigator.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../recruimentmobileapp/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../recruimentmobileapp/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/screens/auth/LoginScreen.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/screens/auth/OnboardingScreen.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/screens/auth/RegisterScreen.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/screens/auth/SplashScreen.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/screens/candidate/HomeScreen.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/services/authService.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/services/jobService.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../recruimentmobileapp/theme/globalStyles.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recruitmentapis/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/recruitmentapis/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

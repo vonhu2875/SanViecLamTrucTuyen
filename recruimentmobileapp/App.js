@@ -1,49 +1,42 @@
-// App.js 
-
-import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import React, { useReducer } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { PaperProvider } from 'react-native-paper';
+import { Provider as PaperProvider } from 'react-native-paper';
 
-import { AuthProvider } from './src/configs/Contexts';
-import AppNavigator from './src/navigation/AppNavigator';
+// Import chuẩn 100% theo 2 file tách biệt của thầy mà bạn vừa làm xong
+import MyUserContext from './configs/Contexts';
+import MyUserReducer from './reducers/reducers';
 
-// Import đầy đủ 3 màn hình theo tiến trình cấu trúc của bạn
-import SplashScreen from './src/screens/auth/SplashScreen';
-import OnboardingScreen from './src/screens/auth/OnboardingScreen'; // Mới thêm
-import LoginScreen from './src/screens/auth/LoginScreen';
-import RegisterScreen from './src/screens/auth/RegisterScreen';
-import HomeScreen from './src/screens/candidate/HomeScreen'; // Mới thêm
+// Import các màn hình (Lát nữa chúng ta sẽ tạo file sau)
+import Home from './screens/Home/Home';
+import Login from './screens/User/Login';
+import Profile from './screens/User/Profile';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <PaperProvider>
-        <SafeAreaProvider>
-          <StatusBar style="dark" />
+  // Khởi tạo useReducer dùng chung cho toàn bộ dự án theo đúng bài giảng
+  const [user, dispatch] = useReducer(MyUserReducer, null);
 
-          <NavigationContainer>
-            <Stack.Navigator
-              initialRouteName="Splash" // Ép buộc luôn khởi động vào Splash đầu tiên
-              screenOptions={{
-                headerShown: false,
-                cardStyle: { backgroundColor: '#FAFAFA' },
-              }}
-            >
-              <Stack.Screen name="Splash" component={SplashScreen} />
-              <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-              <Stack.Screen name="Login" component={LoginScreen} />
-              <Stack.Screen name="Register" component={RegisterScreen} />
-              <Stack.Screen name="Home" component={HomeScreen} />
-            </Stack.Navigator>
-          </NavigationContainer>
-          
-        </SafeAreaProvider>
-      </PaperProvider>
-    </AuthProvider>
+  return (
+    <PaperProvider>
+      {/* Bao bọc toàn bộ App bằng Context để chia sẻ trạng thái đăng nhập */}
+      <MyUserContext.Provider value={[user, dispatch]}>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {user === null ? (
+              <Stack.Screen name="login" component={Login} />
+            ) : 
+            (
+              <>
+                  <Tab.Screen name="profile" component={Profile} options={{ title: 'Cá nhân' }} />
+              </>
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </MyUserContext.Provider>
+    </PaperProvider>
   );
 }

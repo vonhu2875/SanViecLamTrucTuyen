@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django_filters',
     'oauth2_provider',
     'drf_yasg',
+    "corsheaders"
 ]
 
 CKEDITOR_UPLOAD_PATH = 'images/uploads/'
@@ -59,6 +60,8 @@ CKEDITOR_UPLOAD_PATH = 'images/uploads/'
 AUTH_USER_MODEL = 'recruitments.User'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,6 +70,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+ALLOWED_HOSTS = ['192.168.2.21', '127.0.0.1']
+OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
 
 ROOT_URLCONF = 'recruitmentapis.urls'
 
@@ -159,5 +166,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CLIENT_ID = 'MiyqKOGOgCh8ORgMo1HC3Q96SjD9uDBBWJbiSmLj'
-CLIENT_SECRET = '9tmGcYfUP7eoqSp7qYO1zrTxVJEUgnTEE88bSsmbTbpNYlU3RmG0var59vQNzoySOloiBNDv5jqS978OwcQ8FwTn0ikYl8pPqROYWWUCiId5oDuWZiriIVaoIEm5aLZj'
+CLIENT_ID = 'L1nuUfCgVHJp5V4AWf9TvBbywG7jC42jIDpjunED'
+CLIENT_SECRET = 'Dh2oLMMRFFu7spU9TVfYN3lisyHKHhReqEflF3PnvgId73ckYiCGWeyQq6CDPEnKO1ALXq2YDNn0vFg7OKsEwKwLnAVOQmaDrTmcNdRZI2RGXiEAyQSoDfMoYdGX4owH'

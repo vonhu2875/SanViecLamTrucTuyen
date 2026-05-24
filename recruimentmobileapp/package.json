@@ -1,5 +1,5 @@
 {
-  "name": "recruimentmobileapp",
+  "name": "recruitmentmobileapp",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -10,20 +10,20 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
-    "@react-navigation/bottom-tabs": "^7.16.1",
-    "@react-navigation/native": "^7.2.4",
-    "@react-navigation/native-stack": "^7.15.1",
+    "@react-navigation/bottom-tabs": "^7.15.9",
+    "@react-navigation/native": "^7.2.2",
+    "@react-navigation/native-stack": "^7.14.11",
     "@react-navigation/stack": "^7.9.2",
-    "axios": "^1.16.1",
-    "expo": "~55.0.25",
-    "expo-image-picker": "~55.0.20",
-    "expo-linear-gradient": "~55.0.14",
-    "expo-status-bar": "~55.0.6",
-    "react": "19.2.0",
-    "react-native": "0.83.6",
-    "react-native-paper": "^5.15.2",
-    "react-native-safe-area-context": "~5.6.2",
-    "react-native-screens": "~4.23.0"
+    "axios": "^1.15.1",
+    "expo": "~54.0.33",
+    "expo-image-picker": "^55.0.19",
+    "expo-status-bar": "~3.0.9",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-paper": "^5.15.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0"
   },
   "private": true
 }
