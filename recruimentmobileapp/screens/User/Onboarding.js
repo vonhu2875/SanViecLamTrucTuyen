@@ -86,15 +86,14 @@ const Onboarding = ({ navigation }) => {
                     <View style={{ height: 50 }}>
                         <Button 
                             mode="contained" 
-                            buttonColor={COLORS.primary} 
-                            style={Styles.onboardingButton}
+                            buttonColor={COLORS.primary}
                             onPress={() => navigation.replace('login')}
                         >
                             Bắt đầu ngay
                         </Button>
                     </View>
                 ) : (
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' , height: 50}}>
                         <Button 
                             mode="text" 
                             textColor={COLORS.textLighter} 

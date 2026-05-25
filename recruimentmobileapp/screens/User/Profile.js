@@ -9,11 +9,11 @@ const Profile = ({ navigation }) => {
     // 1. Bốc dữ liệu user và hàm dispatch từ Context ra
     const [user, dispatch] = useContext(MyUserContext);
 
-    // 🌟 CHÈN THÊM ĐIỀU KIỆN NÀY LÊN ĐẦU:
+    
     if (user && user.role === 'GUEST') {
         return (
             <SafeAreaView style={Styles.safeArea}>
-                <View style={styles.centerContainer}>
+                <View style={[Styles.container, {alignItems: 'center'}]}>
                     <Avatar.Icon size={80} icon="account-off" backgroundColor="#ccc" style={{marginBottom: 20}} />
                     <Text style={{fontSize: 18, fontWeight: 'bold', color: '#555'}}>Bạn đang ở chế độ Khách</Text>
                     <Text style={{color: 'gray', textAlign: 'center', marginHorizontal: 30, marginTop: 5, marginBottom: 20}}>
@@ -44,10 +44,8 @@ const Profile = ({ navigation }) => {
                     onPress: async () => {
                         // Xóa token lưu trong ổ cứng máy
                         await AsyncStorage.removeItem('token');
-                        
                         // Kích hoạt lệnh LOGOUT để đưa trạng thái user về null
                         dispatch({ "type": "LOGOUT" });
-                        
                         Alert.alert("Thông báo", "Đã đăng xuất thành công!");
                     }
                 }
@@ -58,8 +56,8 @@ const Profile = ({ navigation }) => {
     // Trường hợp phòng hờ nếu chưa có dữ liệu user
     if (!user) {
         return (
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.centerContainer}>
+            <SafeAreaView style={Styles.safeArea}>
+                <View style={Styles.container}>
                     <Text>Không tìm thấy thông tin người dùng.</Text>
                 </View>
             </SafeAreaView>
@@ -71,7 +69,6 @@ const Profile = ({ navigation }) => {
             <ScrollView contentContainerStyle={[Styles.container, { padding: 20 }]}>
                 <Card style={styles.profileCard}>
                     <Card.Content style={styles.cardContent}>
-                        {/* Hiện Avatar bằng ảnh Cloudinary từ Backend gửi về, nếu trống thì hiện ảnh mặc định */}
                         <Avatar.Image 
                             size={100} 
                             source={user.avatar ? { uri: user.avatar } : require('../../assets/icon.png')} 
@@ -79,7 +76,10 @@ const Profile = ({ navigation }) => {
                         />
                         <Text style={styles.nameText}>{user.first_name} {user.last_name}</Text>
                         <Text style={styles.roleText}>
-                            Vai trò: {user.role === 'ALUMNI' ? 'Cựu sinh viên' : 'Nhà tuyển dụng'}
+                            Vai trò:
+                            {
+                                user.role === 'admin' ? ' Quản trị viên' : user.role === 'employer' ? ' Nhà tuyển dụng' : ' Ứng viên'
+                            }
                         </Text>
                     </Card.Content>
                 </Card>
@@ -113,15 +113,11 @@ const Profile = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    centerContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
     profileCard: {
         width: '100%',
         backgroundColor: '#ffffff',
         borderRadius: 15,
+        // đổ bóng
         elevation: 2,
         marginBottom: 20,
         paddingVertical: 15,

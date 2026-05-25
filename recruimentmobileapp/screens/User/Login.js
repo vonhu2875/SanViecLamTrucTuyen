@@ -58,7 +58,7 @@ const Login = () => {
             <ScrollView contentContainerStyle={Styles.container}>
                 <View style={Styles.formContainer}>
                     <Image
-                    source={require('../../assets/jobmate-logo.png')} // Đường dẫn trỏ tới thư mục assets của bạn
+                    source={require('../../assets/jobmate-logo.png')}
                     style={Styles.logoIcon}
                     />
                     <Text style={Styles.title}>JOBMATE</Text>
@@ -105,7 +105,7 @@ const Login = () => {
                     <Text style={Styles.registerText}>Bạn chưa có tài khoản? </Text>
                     <Text 
                         style={Styles.registerLink} 
-                        onPress={() => navigation.navigate('register')} // Gọi tên 'register' thầy đặt trong Tab.Screen ở App.js
+                        onPress={() => navigation.navigate('register')}
                     >
                         Đăng ký ngay
                     </Text>
