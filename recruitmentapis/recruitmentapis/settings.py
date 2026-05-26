@@ -64,7 +64,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-ALLOWED_HOSTS = ['192.168.2.21', '127.0.0.1', '192.168.88.16']
+ALLOWED_HOSTS = ['192.168.2.21', '127.0.0.1', '192.168.88.16', '192.168.102.9', 'localhost']
 OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
 
 ROOT_URLCONF = 'recruitmentapis.urls'
