@@ -1,25 +1,28 @@
 import React, { useContext, useReducer } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { Provider as PaperProvider } from 'react-native-paper';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Provider as PaperProvider, IconButton } from 'react-native-paper';
 
-// Import chuẩn Context và Reducer của bạn
+// Import chuẩn 100% theo các file của bà
 import MyUserContext from './configs/Contexts';
 import MyUserReducer from './reducers/reducers';
+import { EmployerProvider } from './configs/EmployerContext';
 
-// Import các màn hình
-import Home from './screens/Home/Home';
-import Login from './screens/User/Login';
-import Profile from './screens/User/Profile';
+// Các màn hình Auth
 import Splash from './screens/User/Splash'; 
 import Onboarding from './screens/User/Onboarding';
+
 import JobDetail from './screens/User/JobDetail';
 import ApplyJob from './screens/User/ApplyJob';
 import Register from './screens/User/Register';
 import SavedJobs from './screens/User/SavedJob';
 import PostJob from './screens/User/PostJob';
 import ManageJobs from './screens/User/ManageJob';
+import Login from './screens/User/Login';
+import Home from './screens/Home/Home';
+import EmployerTabs from './screens/Employer/EmployerTabs';
+import ApplicantList from './screens/Employer/ApplicantList';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -61,6 +64,7 @@ function MainTabs() {
         />
       }
       {user && user.role === 'employer' &&
+        (<>
         <Tab.Screen 
           name="ManageJobs" 
           component={ManageJobs} 
@@ -75,7 +79,14 @@ function MainTabs() {
                 <IconButton icon="briefcase-check" iconColor={color} size={size} style={{ margin: 0 }} />
               ),
           }} 
+        /> 
+        <Tab.Screen name="EmployerMain" component={EmployerTabs} />
+        <Tab.Screen
+          name="ApplicantList"
+          component={ApplicantList}
+          options={{ headerShown: true, title: 'Danh sách ứng viên' }}
         />
+        </>)
       }
       {/* Tab Cá Nhân */}
       <Tab.Screen name="profile" component={Profile} 
@@ -101,23 +112,24 @@ export default function App() {
 
   return (
     <PaperProvider>
-      <MyUserContext.Provider value={[user, dispatch]}>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {user === null ? (
-              <>
-                <Stack.Screen name="splash" component={Splash} />
-                <Stack.Screen name="onboarding" component={Onboarding} />
-                <Stack.Screen name="login" component={Login} />
-                <Stack.Screen name="register" component={Register} options={{ 
-                headerShown: true,
-                title: 'Đăng nhập',
-                headerTintColor: '#F2A0B6'
-              }}
-                />
-              </>
-            ) : 
-            (
+      <MyUserContext.Provider value={[user, dispatch]}>        
+        {/* ĐƯA EMPLOYERPROVIDER RA ĐÂY: Nằm ngoài Navigator để tránh lỗi cấu trúc */}
+        <EmployerProvider> 
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              {user === null ? (
+                <>
+                  <Stack.Screen name="splash" component={Splash} />
+                  <Stack.Screen name="onboarding" component={Onboarding} />
+                  <Stack.Screen name="login" component={Login} />
+                  <Stack.Screen name="register" component={Register} options={{ 
+                      headerShown: true,
+                      title: 'Đăng nhập',
+                      headerTintColor: '#F2A0B6'
+                    }}
+                    />
+                </>
+              ) : (
               <>
                   <Stack.Screen name="MainApp" component={MainTabs} />
               </>
@@ -145,8 +157,9 @@ export default function App() {
                   title: 'Đăng Tin Tuyển Dụng',
                 }} 
             />
-          </Stack.Navigator>
-        </NavigationContainer>
+            </Stack.Navigator>
+          </NavigationContainer>
+        </EmployerProvider>
       </MyUserContext.Provider>
     </PaperProvider>
   );
