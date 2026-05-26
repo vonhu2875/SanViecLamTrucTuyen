@@ -10,15 +10,27 @@ class ItemSerializer(serializers.ModelSerializer):
         return data
 
 #USER
+class CompanyShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ['id','name', 'logo', 'is_approved']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.logo:
+            data['logo'] = instance.logo.url
+        return data
+
 class SimpleUserSerializer(ItemSerializer):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'avatar']
 
 class UserSerializer(ItemSerializer):
+    company = CompanyShortSerializer(read_only=True)
     class Meta:
         model = SimpleUserSerializer.Meta.model
-        fields = SimpleUserSerializer.Meta.fields + ['id', 'username', 'role', 'password']
+        fields = SimpleUserSerializer.Meta.fields + ['id', 'username', 'role', 'password', 'company']
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -80,16 +92,12 @@ class CompanyAdminSerializer(serializers.ModelSerializer):
         fields = ['is_approved', 'created_date', 'updated_date']
 
 #JOB
-class CompanyShortSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Company
-        fields = ['name', 'logo']
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if instance.logo:
-            data['logo'] = instance.logo.url
-        return data
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id','name']
 
 class CategoryShortSerializer(serializers.ModelSerializer):
     class Meta:

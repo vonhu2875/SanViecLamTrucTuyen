@@ -1,5 +1,5 @@
 
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet, Dimensions, Platform, StatusBar } from "react-native";
 
 // Lấy chiều cao màn hình (Để ngay dưới chỗ import, trên chữ const Styles)
 const { height } = Dimensions.get('window');
@@ -13,11 +13,14 @@ const Styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#FFF0F2',
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+        paddingBottom: Platform.OS === 'android' ? 16 : 0,
     },
     container:
     {
         flexGrow: 1,
         justifyContent: 'center',
+        padding: 15
     },
     formContainer: {
         padding: 20,
@@ -29,12 +32,12 @@ const Styles = StyleSheet.create({
         alignSelf: 'center',
         resizeMode: 'contain'
     },
-    title: {
-        marginTop: 15,
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#F2A0B6',
-        textAlign: 'center',
+    title: { 
+        marginTop: 5,
+        fontSize: 32, 
+        fontWeight: 'bold', 
+        color: '#F2A0B6', 
+        textAlign: 'center', 
         letterSpacing: 1.5,
     },
     subtitle: {

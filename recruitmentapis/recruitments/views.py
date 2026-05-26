@@ -4,10 +4,10 @@ from rest_framework import viewsets, generics, parsers, status, permissions, fil
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
-from recruitments.models import User, Company, Application, SavedJob, Job
+from recruitments.models import User, Company, Application, SavedJob, Job, Category, Skill
 from recruitments import serializers
 from recruitments import perms, paginators
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q
 from django.db.models.functions import ExtractMonth, ExtractYear
 
 #USER
@@ -89,6 +89,13 @@ class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIV
         return Response(serializers.CompanySerializer(company, context={'request': request}).data,
                         status=status.HTTP_200_OK)
 #JOBS
+class SkillViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Skill.objects.filter(active=True)
+    serializer_class = serializers.SkillSerializer
+
+class CategoryViewset(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Category.objects.filter(active=True)
+    serializer_class = serializers.CategorySerializer
 class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.DestroyAPIView, generics.RetrieveAPIView):
     queryset = Job.objects.filter(active=True)
     serializer_class = serializers.JobDetailSerializer
@@ -119,9 +126,11 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
         saved = self.request.query_params.get('saved')
         if saved == 'true' and self.request.user.is_authenticated:
             query = query.filter(saved_users__user=self.request.user, saved_users__active=True)
-        if user.is_authenticated:
-            if user.role == 'employer':
-                query = query.filter(employer__user=user, active=True)
+        if user.is_authenticated and user.role == 'employer':
+                query = query.filter(
+                    Q(employer__is_approved=True, active=True) |
+                    Q(employer__user=user)
+                )
         else:
             query = query.filter(employer__is_approved=True, active=True)
         return query
