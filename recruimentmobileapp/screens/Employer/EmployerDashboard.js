@@ -3,8 +3,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { Card, Text, ActivityIndicator, Avatar, Button, Chip } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
-import { authApis, endpoints } from '../../configs/Apis';
+import { useNavigation, useFocusEffect} from '@react-navigation/native';
+import Apis,{ authApis, endpoints } from '../../configs/Apis';
 import MyUserContext from '../../configs/Contexts';
 import { COLORS } from '../../constants/Colors';
 import Styles from '../../styles/Styles';
@@ -16,25 +16,31 @@ const EmployerDashboard = () => {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = await AsyncStorage.getItem('token');
-                const [statsRes, jobsRes] = await Promise.all([
-                    authApis(token).get(endpoints['employer-stats']).catch(() => null),
-                    authApis(token).get(endpoints['employer-jobs']).catch(() => null),
-                ]);
-                if (statsRes) setStats(statsRes.data);
-                if (jobsRes) setJobs(jobsRes.data.results || jobsRes.data);
-            } catch (error) {
-                console.error("Lỗi dashboard:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
+    // Đoạn code mới tự động re-fetch dữ liệu khi màn hình được Focus (hiển thị lại)
+    useFocusEffect(
+        React.useCallback(() => {
+            const fetchData = async () => {
+                try {
+                    const token = await AsyncStorage.getItem('token');
+                    const [statsRes, jobsRes] = await Promise.all([
+                        authApis(token).get(endpoints['employer-stats']).catch(() => null),
+                        authApis(token).get(`${endpoints['jobs']}?my_jobs=true`).catch(() => null),
+                    ]);
+                    if (statsRes) setStats(statsRes.data);
+                    if (jobsRes) setJobs(jobsRes.data.results || jobsRes.data);
+                } catch (error) {
+                    console.error("Lỗi dashboard:", error);
+                } finally {
+                    setLoading(false);
+                }
+            };
 
+            fetchData();
+            
+            return () => {
+            };
+        }, [])
+    );
     const getStatusCount = (statusName) => {
         if (!stats?.applications_by_status) return 0;
         const found = stats.applications_by_status.find(s => s.status === statusName);
@@ -48,20 +54,21 @@ const EmployerDashboard = () => {
             </View>
         );
     }
+    
+    const handleEditPress = async (jobId) => {
+        try {
+            const response = await Apis.get(`/jobs/${jobId}/`); 
+            navigation.navigate('PostJob', { editJobData: response.data });
+        } catch (error) {
+            console.error("Lỗi lấy chi tiết công việc:", error);
+        }
+    };
 
     return (
         <ScrollView
             contentContainerStyle={[Styles.dashScrollContainer, { backgroundColor: COLORS.background }]}
             showsVerticalScrollIndicator={false}
         >
-            {/* HEADER */}
-            <Text style={[Styles.dashPageTitle, { color: COLORS.textDarker }]}>
-                Trang chủ
-            </Text>
-            <Text style={[Styles.dashSubtitle, { color: COLORS.textLight }]}>
-                Xin chào, {user?.first_name || user?.username} 👋
-            </Text>
-
             {/* STATS — 3 thẻ hàng ngang */}
             <View style={Styles.dashStatsRow}>
                 <Card style={[Styles.dashStatCard, { backgroundColor: COLORS.cardBg }]} elevation={2}>
@@ -195,19 +202,20 @@ const EmployerDashboard = () => {
                                 textColor={COLORS.primary}
                                 icon="account-group-outline"
                                 compact
-                                onPress={() => navigation.navigate('ApplicantList', {
+                                onPress={() => navigation.navigate('StackApplicantList', {
                                     jobId: job.id,
                                     jobTitle: job.title
                                 })}
                             >
-                                Xem CV
+                                Xem ứng viên
                             </Button>
                             <Button
                                 mode="text"
                                 textColor={COLORS.textLight}
                                 icon="pencil-outline"
                                 compact
-                                onPress={() => {}} // TODO: mở màn sửa tin
+                                
+                                onPress={() => {handleEditPress(job.id)}}
                             >
                                 Chỉnh sửa
                             </Button>

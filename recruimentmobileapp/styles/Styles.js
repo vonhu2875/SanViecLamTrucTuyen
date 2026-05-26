@@ -20,7 +20,8 @@ const Styles = StyleSheet.create({
     {
         flexGrow: 1,
         justifyContent: 'center',
-        padding: 15
+        padding: 15,
+        paddingTop: 0,
     },
     formContainer: {
         padding: 20,
@@ -166,11 +167,11 @@ const Styles = StyleSheet.create({
     },
     // === APPLICANT LIST ===
     appListRoot: { flex: 1 },
-    appListHeader: { padding: 16, paddingTop: 50, paddingBottom: 8 },
+    appListHeader: { padding: 16, paddingBottom: 8 },
     appListTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 12 },
     appListSearchbar: { marginBottom: 12 },
     appListChipRow: { flexDirection: 'row', gap: 8 },
-    appListFlatList: { padding: 16, paddingTop: 50, paddingBottom: 40 },
+    appListFlatList: { padding: 16, paddingBottom: 80 },
     appListEmpty: { alignItems: 'center', marginTop: 60 },
     appListEmptyText: { marginTop: 12, fontStyle: 'italic' },
 
@@ -211,7 +212,7 @@ const Styles = StyleSheet.create({
     cpLogoutBtn: { borderColor: '#EF4444', borderRadius: 10, paddingVertical: 4 },
 
     // === EMPLOYER DASHBOARD ===
-    dashScrollContainer: { padding: 16, paddingTop: 50, paddingBottom: 40 },
+    dashScrollContainer: { padding: 16,  paddingBottom: 40 },
     dashPageTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
     dashSubtitle: { fontSize: 14, marginBottom: 20 },
     dashStatsRow: { flexDirection: 'row', gap: 8, marginBottom: 24 },

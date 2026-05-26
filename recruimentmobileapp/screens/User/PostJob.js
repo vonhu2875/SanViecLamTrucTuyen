@@ -8,9 +8,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Apis, { endpoints } from '../../configs/Apis';
 
 const PostJob = ({ route, navigation }) => {
+    
     const editJobData = route.params?.editJobData || null;
     const isEditMode = !!editJobData;
-
+    console.log("DỮ LIỆU CŨ NHẬN ĐƯỢC:", editJobData);
     // 1. Quản lý trạng thái phân quyền dựa theo kiểm duyệt Backend
     const [hasCompany, setHasCompany] = useState(true);
     const [isApproved, setIsApproved] = useState(true);
@@ -76,7 +77,7 @@ const PostJob = ({ route, navigation }) => {
                 setCategoryId(categories[0].id);
             }
         }
-    }, [route.params]);
+    }, [editJobData, isEditMode, categories]);
 
     // Hàm kiểm tra quyền hạn doanh nghiệp và load thông tin cấu hình danh mục
     const verifyEmployerStatusAndFetchData = async () => {
@@ -146,8 +147,7 @@ const PostJob = ({ route, navigation }) => {
         return `${year}-${month}-${day}`;
     };
 
-    // Hàm xử lý chung cho cả Đăng mới (POST) và Chỉnh sửa (PATCH)
-    // Hàm xử lý chung cho cả Đăng mới (POST) và Chỉnh sửa (PATCH)
+    
     const handlePostJob = async () => {
         if (!title || !salaryMin || !salaryMax || !location || !description || !requirements || !benefits) {
             Alert.alert("Thông báo", "Vui lòng điền đầy đủ thông tin bắt buộc có dấu (*)");
@@ -174,8 +174,7 @@ const PostJob = ({ route, navigation }) => {
 
             let response;
             if (isEditMode) {
-                // Chế độ sửa bài (PATCH)
-                response = await Apis.patch(`/jobs/${editJobData.id}/`, jobData, {
+                response = await Apis.patch(`/jobs/${editJobData.id}/update-job/`, jobData, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -200,7 +199,6 @@ const PostJob = ({ route, navigation }) => {
                         {
                             text: "OK",
                             onPress: () => {
-                                // 🌟 Khi người dùng bấm OK trên pop-up thành công, hệ thống sẽ tự chuyển hướng lùi về trang quản lý
                                 navigation.goBack(); 
                             }
                         }

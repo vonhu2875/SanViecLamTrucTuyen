@@ -1,7 +1,7 @@
 import React, { useContext, useReducer } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { IconButton, Provider as PaperProvider } from 'react-native-paper';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 // Import chuẩn 100% theo các file của bà
@@ -18,10 +18,11 @@ import ApplyJob from './screens/User/ApplyJob';
 import Register from './screens/User/Register';
 import SavedJobs from './screens/User/SavedJob';
 import PostJob from './screens/User/PostJob';
-import ManageJobs from './screens/User/ManageJob';
+import Profile from './screens/User/Profile';
 import Login from './screens/User/Login';
 import Home from './screens/Home/Home';
-import EmployerTabs from './screens/Employer/EmployerTabs';
+import EmployerDashboard from './screens/Employer/EmployerDashboard';
+
 import ApplicantList from './screens/Employer/ApplicantList';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -65,27 +66,33 @@ function MainTabs() {
       }
       {user && user.role === 'employer' &&
         (<>
-        <Tab.Screen 
-          name="ManageJobs" 
-          component={ManageJobs} 
-          options={{ 
-            headerShown: true,
-            headerLeft: () => null,
-            headerTintColor: '#F2A0B6',
-            title: 'Tin Tuyển Dụng Đã Đăng',
-            tabBarLabel: 'Tin tuyển dụng',
-            tabBarIcon: ({ color, size }) => 
-              (
-                <IconButton icon="briefcase-check" iconColor={color} size={size} style={{ margin: 0 }} />
-              ),
-          }} 
-        /> 
-        <Tab.Screen name="EmployerMain" component={EmployerTabs} />
-        <Tab.Screen
-          name="ApplicantList"
-          component={ApplicantList}
-          options={{ headerShown: true, title: 'Danh sách ứng viên' }}
+        
+        <Tab.Screen name="EmployerMain" component={EmployerDashboard} options={{
+            headerShown: true, 
+            title: 'Tin tuyển dụng đã đăng',
+              tabBarLabel: 'Tin đã đăng',
+              headerTintColor: '#F2A0B6',
+              tabBarIcon: ({ color, size }) => (<IconButton
+              icon="briefcase-check"
+              iconColor={color}
+              
+              size={size}
+              style={{ margin: 0 }}
+            />)
+            }}
         />
+        <Tab.Screen
+              name="ApplicantList"
+              component={ApplicantList}
+              options={{ headerShown: true, 
+              tabBarLabel: 'Ứng viên',
+              headerTintColor: '#F2A0B6',
+              title: 'Danh sách ứng viên',
+                tabBarIcon: ({ color, size }) => (
+                <IconButton icon="account-group-outline" iconColor={color} size={size} style={{ margin: 0 }}/>
+              )
+              }}
+            />
         </>)
       }
       {/* Tab Cá Nhân */}
@@ -156,6 +163,18 @@ export default function App() {
                   headerTintColor: '#F2A0B6',
                   title: 'Đăng Tin Tuyển Dụng',
                 }} 
+            />
+            <Stack.Screen
+              name="StackApplicantList"
+              component={ApplicantList}
+              options={{ headerShown: true, 
+              tabBarLabel: 'Ứng viên',
+              headerTintColor: '#F2A0B6',
+              title: 'Danh sách ứng viên',
+                tabBarIcon: ({ color, size }) => (
+                <IconButton icon="account-group-outline" iconColor={color} size={size} style={{ margin: 0 }}/>
+              )
+              }}
             />
             </Stack.Navigator>
           </NavigationContainer>

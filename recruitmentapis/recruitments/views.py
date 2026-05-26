@@ -126,6 +126,9 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
         saved = self.request.query_params.get('saved')
         if saved == 'true' and self.request.user.is_authenticated:
             query = query.filter(saved_users__user=self.request.user, saved_users__active=True)
+        my_jobs = self.request.query_params.get('my_jobs')
+        if my_jobs == 'true' and user.is_authenticated and user.role == 'employer':
+            return query.filter(employer__user=user)
         if user.is_authenticated and user.role == 'employer':
                 query = query.filter(
                     Q(employer__is_approved=True, active=True) |
@@ -159,7 +162,7 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
     @action(methods=['patch'], detail=True, url_path='update-job')
     def update_job(self, request, pk=None):
         job = self.get_object()
-        s = serializers.JobSimpleSerializer(job, data=request.data, partial=True, context={'request':request})
+        s = serializers.JobDetailSerializer(job, data=request.data, partial=True, context={'request':request})
         s.is_valid(raise_exception=True)
         job = s.save()
         return Response(serializers.JobDetailSerializer(job, context={'request': request}).data,
@@ -188,14 +191,19 @@ class ApplicationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Create
 
     def get_queryset(self):
         user = self.request.user
+
         if user.is_staff or user.is_superuser or user.role == 'admin':
             return Application.objects.filter(active=True)
         if user.role.__eq__('candidate'):
             # Candidate chỉ thấy đơn mình đã nộp
             return Application.objects.filter(candidate=user, active=True)
         if user.role.__eq__('employer'):
-            # Employer thấy CV nộp vào job của công ty mình
-            return Application.objects.filter(job__employer__user=user, active=True)
+            queryset = Application.objects.filter(job__employer__user=user, active=True)
+            job_id = self.request.query_params.get('job_id')
+            if job_id:
+                return queryset.filter(job_id=job_id)
+
+            return queryset
 
     def get_permissions(self):
         if self.request.method == 'POST':

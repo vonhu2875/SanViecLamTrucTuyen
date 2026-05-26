@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from recruitments.models import User, Company, Application, Job, Category, Skill
-
+from django.utils.html import strip_tags
+import html
 
 class ItemSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
@@ -112,20 +113,26 @@ class JobSimpleSerializer(serializers.ModelSerializer):
         model = Job
         fields = [
             'id', 'title', 'location', 'salary_min', 'salary_max',
-            'deadline', 'is_featured', 'employer', 'category'
+            'deadline', 'is_featured', 'employer', 'category', 'active'
         ]
 class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
         fields = ['id', 'name']
 
+
 class JobDetailSerializer(JobSimpleSerializer):
+    skills = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Skill.objects.all(),
+        required=False
+    )
     category = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.filter(active=True),
         required=True,
         write_only=True
     )
-    skills = SkillSerializer(many=True, read_only=True)
+
     class Meta:
         model = JobSimpleSerializer.Meta.model
         fields = JobSimpleSerializer.Meta.fields + [
@@ -136,21 +143,45 @@ class JobDetailSerializer(JobSimpleSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+
         if instance.category:
-            data['category'] = CategoryShortSerializer(instance.category).data
+            data['category'] = CategorySerializer(instance.category).data
+        if instance.skills:
+            data['skills'] = SkillSerializer(instance.skills.all(), many=True).data
+
         request = self.context.get('request')
         if request and request.user and request.user.is_authenticated:
             data['saved'] = instance.saved_users.filter(user=request.user, active=True).exists()
         else:
             data['saved'] = False
+
+        if instance.description:
+            unescaped_desc = html.unescape(instance.description)
+            data['description'] = strip_tags(unescaped_desc).strip()
+
+        if instance.requirements:
+            unescaped_req = html.unescape(instance.requirements)
+            data['requirements'] = strip_tags(unescaped_req).strip()
+
+        if instance.benefits:
+            unescaped_ben = html.unescape(instance.benefits)
+            data['benefits'] = strip_tags(unescaped_ben).strip()
+
         return data
 
+class ApplicantCandidateSerializer(ItemSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'avatar']
+
 class ApplicationSerializer(serializers.ModelSerializer):
+    candidate = ApplicantCandidateSerializer(read_only=True)
+    job_title = serializers.CharField(source='job.title', read_only=True)
     class Meta:
         model = Application
         fields = [
-            'id', 'job', 'cv_file', 'cover_letter',
-            'status', 'employer_comment', 'created_date'
+            'id', 'job', 'job_title', 'cv_file', 'cover_letter',
+            'status', 'employer_comment', 'created_date', 'candidate'
         ]
         read_only_fields = ['status', 'employer_comment', 'created_date']
 

@@ -130,7 +130,7 @@ const SavedJobs = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff', padding: 15 },
-    headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 30, marginTop: -10, paddingHorizontal: 5 },
+    headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 20, marginTop: 20, paddingHorizontal: 5 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     card: { marginBottom: 15, backgroundColor: '#fff', borderRadius: 12, elevation: 2 },
     cardTitle: { fontWeight: 'bold', color: '#333', fontSize: 16 },
