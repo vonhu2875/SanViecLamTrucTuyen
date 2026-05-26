@@ -5,8 +5,13 @@ export const endpoints = {
     'register': '/users/',
     'login': '/o/token/',
     'current-user': '/users/current-user/',
+    'companies': '/companies/',
+    'current-company': '/companies/current-company/',
     'categories': '/categories/',
+    'skills': '/skills/',
     'jobs': '/jobs/',
+    'apply-job': '/applications/',
+    'save-job': (jobId) => `/jobs/${jobId}/save/`
 };
 
 export const authApis = (token) => {

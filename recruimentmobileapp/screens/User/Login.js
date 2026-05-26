@@ -6,7 +6,7 @@ import API, { authApis, endpoints } from '../../configs/Apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Styles from '../../styles/Styles';
 import { SafeAreaView } from 'react-native';
-const Login = () => {
+const Login = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [err, setErr] = useState();
@@ -89,7 +89,7 @@ const Login = () => {
                     />
 
                     {loading ? (
-                        <ActivityIndicator size="small" color="#F2A0B6" style={Styles.input} />
+                        <ActivityIndicator size="small" color="#F2A0B6" style={[Styles.input]} />
                     ) : (
                         <Button 
                             mode="contained" 
