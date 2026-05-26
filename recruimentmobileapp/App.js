@@ -23,13 +23,42 @@ import ApplicantList from './screens/Employer/ApplicantList';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+//Tạo một hàm riêng quản lý bộ các Tab dưới đáy màn hình
+function MainTabs() {
+  return (
+    <Tab.Navigator 
+      screenOptions={{ 
+        tabBarActiveTintColor: '#F2A0B6',
+        tabBarInactiveTintColor: '#666',
+        headerShown: false
+      }}
+    >
+      {/* Tab Trang Chủ */}
+      <Tab.Screen name="home" component={Home} options=
+        {{ title: 'Trang chủ', tabBarIcon: ({ color, size }) => 
+          (
+            <IconButton icon="home" iconColor={color} size={size} style={{margin: 0}} />
+          )
+        }} 
+      />
+
+      {/* Tab Cá Nhân */}
+      <Tab.Screen name="profile" component={Profile} options=
+        {{ title: 'Cá nhân', tabBarIcon: ({ color, size }) => 
+          (
+            <IconButton icon="account" iconColor={color} size={size} style={{margin: 0}} />
+          )
+        }} 
+      />
+    </Tab.Navigator>
+  );
+}
+
 export default function App() {
-  // Khởi tạo useReducer dùng chung cho toàn bộ dự án theo đúng bài giảng
   const [user, dispatch] = useReducer(MyUserReducer, null);
 
   return (
     <PaperProvider>
-      {/* Bao bọc toàn bộ App bằng Context để chia sẻ trạng thái đăng nhập */}
       <MyUserContext.Provider value={[user, dispatch]}>
         
         {/* ĐƯA EMPLOYERPROVIDER RA ĐÂY: Nằm ngoài Navigator để tránh lỗi cấu trúc */}

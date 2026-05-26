@@ -105,7 +105,7 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
     filterset_fields = {
         'category': ['exact'],
         'location': ['exact'],
-        'skill__name': ['exact'],
+        'skills__name': ['exact'],
         'salary_min': ['gte'],
         'salary_max': ['lte'],
     }

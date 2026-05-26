@@ -5,6 +5,11 @@ import { StyleSheet, Dimensions } from "react-native";
 const { height } = Dimensions.get('window');
 
 const Styles = StyleSheet.create({
+    colorMain: {
+        primary: '#F2A0B6',
+        secondary: '#F2A0B9',
+        background: '#FFF0F2', 
+    },
     safeArea: {
         flex: 1,
         backgroundColor: '#FFF0F2',
@@ -132,7 +137,7 @@ const Styles = StyleSheet.create({
         borderRadius: 5,
     },
     onboardingBottom: {
-        marginBottom: 30, // Giảm marginBottom để gom cụm lại
+        marginBottom: 50, // Giảm marginBottom để gom cụm lại
         paddingHorizontal: 30,
     },
     fancyIllustrationContainer: {

@@ -29,8 +29,8 @@ const Login = () => {
         try {
             setLoading(true);
             let res = await API.post(endpoints['login'], {
-                'client_id': 'yLisKdKddyPvgj4g5QQTokzH9dluVNzopuCrgO0r',
-                'client_secret': 'TiMhZWHZM3bCLXmTXoqXuM6GN2S7DqIfLki5O9WawUl0Az5ej3rYoTIulp21Th0Z2MObNQvpSrsF5L8Ry2TFARCi0IFe8quSCRjXjeQqbv7Uhl3Dziij6euKRqit0heX',
+                'client_id': 'L1nuUfCgVHJp5V4AWf9TvBbywG7jC42jIDpjunED',
+                'client_secret': 'Dh2oLMMRFFu7spU9TVfYN3lisyHKHhReqEflF3PnvgId73ckYiCGWeyQq6CDPEnKO1ALXq2YDNn0vFg7OKsEwKwLnAVOQmaDrTmcNdRZI2RGXiEAyQSoDfMoYdGX4owH',
                 'username': username.trim(),
                 'password': password,
                 'grant_type': 'password'
@@ -58,7 +58,7 @@ const Login = () => {
             <ScrollView contentContainerStyle={Styles.container}>
                 <View style={Styles.formContainer}>
                     <Image
-                    source={require('../../assets/jobmate-logo.png')} // Đường dẫn trỏ tới thư mục assets của bạn
+                    source={require('../../assets/jobmate-logo.png')}
                     style={Styles.logoIcon}
                     />
                     <Text style={Styles.title}>JOBMATE</Text>
@@ -105,7 +105,7 @@ const Login = () => {
                     <Text style={Styles.registerText}>Bạn chưa có tài khoản? </Text>
                     <Text 
                         style={Styles.registerLink} 
-                        onPress={() => navigation.navigate('register')} // Gọi tên 'register' thầy đặt trong Tab.Screen ở App.js
+                        onPress={() => navigation.navigate('register')}
                     >
                         Đăng ký ngay
                     </Text>
