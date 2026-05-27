@@ -119,8 +119,10 @@ const Home = ({ navigation }) => {
                     <Text style={styles.companyName} numberOfLines={1}>{item.employer?.name}</Text>
                     
                     <View style={styles.tagContainer}>
-                        <Chip icon="map-marker" style={styles.chip} textStyle={styles.chipText}>{item.location}</Chip>
-                        <Chip icon="cash" style={styles.salaryChip} textStyle={styles.salaryChipText}>
+                        <Chip icon="map-marker" style={styles.chip} textStyle={styles.chipText} compact={false}>
+                            {item.location}
+                        </Chip>
+                        <Chip icon="cash" style={styles.salaryChip} textStyle={styles.salaryChipText} compact={false}>
                             {formatSalary(item.salary_min)} - {formatSalary(item.salary_max)}
                         </Chip>
                     </View>
@@ -302,11 +304,23 @@ const styles = StyleSheet.create({
     infoContainer: { flex: 1, marginLeft: 15, justifyContent: 'center' },
     jobTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', paddingRight: 10 },
     companyName: { fontSize: 14, color: '#666', marginTop: 2 },
-    tagContainer: { flexDirection: 'row', marginTop: 10, flexWrap: 'wrap' },
-    chip: { backgroundColor: '#f0f0f0', marginRight: 6, height: 28, justifyContent: 'space-evenly', alignItems:'stretch', marginBottom: 6 },
-    chipText: { fontSize: 11, color: '#555' },
-    salaryChip: { backgroundColor: '#FFEBF0', height: 28, justifyContent: 'center' },
-    salaryChipText: { fontSize: 11, color: '#F2A0B6', fontWeight: '600' },
+    tagContainer: { flexDirection: 'row', marginTop: 10, flexWrap: 'wrap', gap: 6 },
+    chip: {
+        backgroundColor: '#f0f0f0',
+        alignSelf: 'flex-start',
+        maxWidth: '100%',
+        marginBottom: 4,
+        paddingVertical: 4,
+    },
+    chipText: { fontSize: 12, color: '#555', lineHeight: 18 },
+    salaryChip: {
+        backgroundColor: '#FFEBF0',
+        alignSelf: 'flex-start',
+        maxWidth: '100%',
+        marginBottom: 4,
+        paddingVertical: 4,
+    },
+    salaryChipText: { fontSize: 12, color: '#F2A0B6', fontWeight: '600', lineHeight: 18 },
     starIcon: { margin: 0, position: 'absolute', top: 5, right: 5 },
     emptyText: { textAlign: 'center', marginTop: 40, color: '#888' },
 });

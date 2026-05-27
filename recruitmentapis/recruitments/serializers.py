@@ -137,9 +137,15 @@ class JobSimpleSerializer(serializers.ModelSerializer):
             'deadline', 'is_featured', 'employer', 'category', 'active'
         ]
 class SkillSerializer(serializers.ModelSerializer):
+    category_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=True,
+        source='categories'
+    )
+
     class Meta:
         model = Skill
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'category_ids']
 
 
 class JobDetailSerializer(JobSimpleSerializer):

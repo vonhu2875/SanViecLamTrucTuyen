@@ -108,9 +108,16 @@ class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAP
         return Response(serializers.CompanySerializer(company, context={'request': request}).data,
                         status=status.HTTP_200_OK)
 #JOBS
+
 class SkillViewSet(viewsets.ViewSet, generics.ListAPIView):
-    queryset = Skill.objects.filter(active=True)
     serializer_class = serializers.SkillSerializer
+
+    def get_queryset(self):
+        queryset = Skill.objects.filter(active=True)
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            queryset = queryset.filter(categories__id=category_id)
+        return queryset.distinct()
 
 class CategoryViewset(viewsets.ViewSet, generics.ListAPIView):
     queryset = Category.objects.filter(active=True)

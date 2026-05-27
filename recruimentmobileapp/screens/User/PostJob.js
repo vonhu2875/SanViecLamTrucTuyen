@@ -79,6 +79,24 @@ const PostJob = ({ route, navigation }) => {
         }
     }, [editJobData, isEditMode, categories]);
 
+    const fetchSkillsByCategory = async (catId) => {
+        try {
+            if (!catId) {
+                setSkillsList([]);
+                return;
+            }
+            const skillRes = await Apis.get(`${endpoints['skills'] || '/skills/'}?category=${catId}`);
+            const fetchedSkills = skillRes.data.results || skillRes.data || [];
+            setSkillsList(fetchedSkills);
+
+            // Loại các skill không còn thuộc danh mục hiện tại
+            setSelectedSkills(prev => prev.filter(id => fetchedSkills.some(skill => skill.id === id)));
+        } catch (error) {
+            console.error("Lỗi tải kỹ năng theo danh mục:", error);
+            setSkillsList([]);
+        }
+    };
+
     // Hàm kiểm tra quyền hạn doanh nghiệp và load thông tin cấu hình danh mục
     const verifyEmployerStatusAndFetchData = async () => {
         try {
@@ -100,15 +118,11 @@ const PostJob = ({ route, navigation }) => {
             setHasCompany(true);
             setIsApproved(true);
 
-            // Tải danh mục ngành nghề và danh sách kỹ năng
-            const [catRes, skillRes] = await Promise.all([
-                Apis.get(endpoints['categories'] || '/categories/'),
-                Apis.get(endpoints['skills'] || '/skills/')
-            ]);
+            // Tải danh mục ngành nghề
+            const catRes = await Apis.get(endpoints['categories'] || '/categories/');
             
             const fetchedCategories = catRes.data.results || catRes.data;
             setCategories(fetchedCategories);
-            setSkillsList(skillRes.data.results || skillRes.data);
             
             // Đặt danh mục mặc định ban đầu nếu đăng bài mới
             if (!isEditMode && fetchedCategories && fetchedCategories.length > 0) {
@@ -129,6 +143,10 @@ const PostJob = ({ route, navigation }) => {
     useEffect(() => {
         verifyEmployerStatusAndFetchData();
     }, []);
+
+    useEffect(() => {
+        if (categoryId) fetchSkillsByCategory(categoryId);
+    }, [categoryId]);
 
     // Xử lý chọn đa kỹ năng yêu cầu (Many-to-Many)
     const toggleSkill = (skillId) => {

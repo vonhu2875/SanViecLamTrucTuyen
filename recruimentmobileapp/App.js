@@ -23,6 +23,7 @@ import Login from './screens/User/Login';
 import Home from './screens/Home/Home';
 import EmployerDashboard from './screens/Employer/EmployerDashboard';
 import ApplicationDetail from './screens/Employer/ApplicationDetail';
+import CompanyDetail from './screens/Employer/CompanyDetail';
 
 import ApplicantList from './screens/Employer/ApplicantList';
 const Stack = createStackNavigator();
@@ -164,6 +165,11 @@ export default function App() {
                 title: 'Chi tiết hồ sơ',
                 headerTintColor: '#F2A0B6'
               }} />
+              <Stack.Screen name="CompanyDetail" component={CompanyDetail} options={{ 
+                headerShown: true,
+                title: 'Thông tin công ty',
+                headerTintColor: '#F2A0B6'
+                }} />
             </Stack.Navigator>
           </NavigationContainer>
         </EmployerProvider>
@@ -172,24 +178,6 @@ export default function App() {
   );
 }
  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

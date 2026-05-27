@@ -52,6 +52,8 @@ class Category(BaseModel):
 # Kỹ năng mỗi job (Để dễ mở rộng tìm kiếm job theo kỹ năng)
 class Skill(BaseModel):
     name = models.CharField(max_length=100, unique=True)
+    categories = models.ManyToManyField(Category, related_name='skills', blank=True)
+
     def __str__(self):
         return self.name
 

@@ -1,7 +1,7 @@
 // screens/Employer/ApplicantList.js
-import React, { useState, useEffect } from 'react';
-import { View, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
-import { Text, Avatar, Chip, ActivityIndicator, Searchbar, Icon } from 'react-native-paper';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, FlatList, TouchableOpacity, RefreshControl, StyleSheet, ScrollView } from 'react-native';
+import { Text, Avatar, ActivityIndicator, Searchbar, Icon } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { authApis, endpoints } from '../../configs/Apis';
@@ -10,7 +10,7 @@ import { COLORS } from '../../constants/Colors';
 
 const STATUS_CONFIG = {
     pending:  { label: 'Chờ xem xét',  color: '#F59E0B', bg: '#FEF3C7' },
-    reviewed: { label: 'Đang xem xét', color: '#3B82F6', bg: '#EFF6FF' },
+    reviewed: { label: 'Đã đánh giá',  color: '#3B82F6', bg: '#EFF6FF' },
     accepted: { label: 'Đã duyệt',     color: '#10B981', bg: '#E8F5E9' },
     rejected: { label: 'Từ chối',      color: '#EF4444', bg: '#FFEBEE' },
 };
@@ -55,16 +55,34 @@ const ApplicantList = () => {
 
     useEffect(() => {
         let result = [...apps];
-        if (activeFilter !== 'all') result = result.filter(a => a.status === activeFilter);
+        if (activeFilter === 'reviewed') {
+            result = result.filter(a => ['reviewed', 'accepted', 'rejected'].includes(a.status));
+        } else if (activeFilter !== 'all') {
+            result = result.filter(a => a.status === activeFilter);
+        }
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
             result = result.filter(a => {
                 const fullName = `${a.candidate?.last_name || ''} ${a.candidate?.first_name || ''}`.toLowerCase();
-                return fullName.includes(q) || a.candidate?.username?.toLowerCase().includes(q) || a.candidate?.email?.toLowerCase().includes(q);
+                const username = a.candidate?.username?.toLowerCase() || '';
+                const email = a.candidate?.email?.toLowerCase() || '';
+                return fullName.includes(q) || username.includes(q) || email.includes(q);
             });
         }
         setFiltered(result);
     }, [activeFilter, searchQuery, apps]);
+
+    const statusCounts = useMemo(() => {
+        const baseCounts = apps.reduce((acc, app) => {
+            if (acc[app.status] !== undefined) acc[app.status] += 1;
+            return acc;
+        }, { pending: 0, reviewed: 0, accepted: 0, rejected: 0 });
+
+        return {
+            ...baseCounts,
+            reviewed: baseCounts.reviewed + baseCounts.accepted + baseCounts.rejected,
+        };
+    }, [apps]);
 
     const handleStatusUpdate = (id, newStatus) => {
         setApps(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
@@ -149,23 +167,30 @@ const ApplicantList = () => {
                 iconColor={COLORS.primary}
             />
 
-            <View style={styles.chipRow}>
-                {[
-                    { key: 'all',      label: `Tất cả (${apps.length})` },
-                    { key: 'pending',  label: `Chờ (${apps.filter(a => a.status === 'pending').length})` },
-                    { key: 'accepted', label: `Duyệt (${apps.filter(a => a.status === 'accepted').length})` },
-                    { key: 'rejected', label: `Từ chối (${apps.filter(a => a.status === 'rejected').length})` },
-                ].map(f => (
-                    <TouchableOpacity
-                        key={f.key}
-                        style={[styles.filterChip, activeFilter === f.key && styles.filterChipActive]}
-                        onPress={() => setActiveFilter(f.key)}
-                    >
-                        <Text style={[styles.filterChipText, activeFilter === f.key && styles.filterChipTextActive]}>
-                            {f.label}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
+            <View style={{ marginBottom: 10 }}>
+                <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.categoryContainer}
+                >
+                    {[
+                        { key: 'all',      label: `Tất cả (${apps.length})` },
+                        { key: 'pending',  label: `Chờ xem xét (${statusCounts.pending})` },
+                        { key: 'reviewed', label: `Đã đánh giá (${statusCounts.reviewed})` },
+                        { key: 'accepted', label: `Đã duyệt (${statusCounts.accepted})` },
+                        { key: 'rejected', label: `Từ chối (${statusCounts.rejected})` },
+                    ].map(f => (
+                        <TouchableOpacity
+                            key={f.key}
+                            style={[styles.categoryTab, activeFilter === f.key && styles.activeCategoryTab]}
+                            onPress={() => setActiveFilter(f.key)}
+                        >
+                            <Text style={[styles.categoryTabText, activeFilter === f.key && styles.activeCategoryTabText]}>
+                                {f.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
             </View>
 
             <FlatList
@@ -197,15 +222,34 @@ const styles = StyleSheet.create({
     searchbar: { margin: 12, marginBottom: 8, backgroundColor: '#fff', elevation: 1, borderRadius: 10 },
 
     // Filter chips — dùng TouchableOpacity thay Chip để kiểm soát size tốt hơn
-    chipRow: { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 10, gap: 6 },
-    filterChip: {
-        paddingHorizontal: 10, paddingVertical: 5,
-        borderRadius: 20, backgroundColor: '#F3F4F6',
-        borderWidth: 1, borderColor: '#E5E7EB',
+    categoryContainer: {
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+        alignItems: 'center',
     },
-    filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-    filterChipText: { fontSize: 12, color: '#6B7280' },
-    filterChipTextActive: { color: '#fff', fontWeight: '600' },
+    categoryTab: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        elevation: 1,
+    },
+    activeCategoryTab: {
+        backgroundColor: COLORS.primaryLight || '#FFEBF0', // Nền hồng nhạt
+        borderColor: COLORS.primary, // Viền hồng đậm
+    },
+    categoryTabText: {
+        fontSize: 13,
+        color: '#666',
+        fontWeight: '500',
+    },
+    activeCategoryTabText: {
+        color: COLORS.primary, // Chữ hồng đậm
+        fontWeight: 'bold',
+    },
 
     // Card
     card: {
@@ -217,8 +261,6 @@ const styles = StyleSheet.create({
     cardInfo: { flex: 1, marginLeft: 12 },
     cardName: { fontSize: 15, fontWeight: '700', color: '#111827' },
     cardEmail: { fontSize: 12, color: '#6B7280', marginTop: 1 },
-    cardJob: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-
     cardJobContainer: {
     flexDirection: 'row',  // 🌟 BẮT BUỘC: Ép icon và chữ phải nằm trên cùng một hàng ngang
     alignItems: 'center',  // Giúp icon và chữ căn giữa đều nhau, không bị lệch lên lệch xuống

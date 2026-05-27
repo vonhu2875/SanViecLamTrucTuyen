@@ -23,7 +23,7 @@ import sys
 # Đảm bảo Python nhận diện chuỗi UTF-8 khi đọc script ngầm
 sys.stdout.reconfigure(encoding='utf-8') if hasattr(sys.stdout, 'reconfigure') else None
 
-from recruitments.models import User, Category, Company, Job, Application
+from recruitments.models import User, Category, Company, Job, Skill
 
 # --- A. TẠO CÁC CHUYÊN MỤC NGÀNH NGHỀ (Category) ---
 c1, is_created1 = Category.objects.get_or_create(name='Công nghệ thông tin', active=True)
@@ -68,51 +68,90 @@ else:
 
 
 # --- C. TẠO CÁC BÀI TIN TUYỂN DỤNG (Job) ---
+skill_defs = [
+    ('Python', [c1]),
+    ('Django', [c1]),
+    ('Machine Learning', [c1]),
+    ('SEO', [c2]),
+    ('Google Ads', [c2, c3]),
+]
 
-# Tạo trước các Kỹ năng mẫu trong DB
-sk1, _ = Skill.objects.get_or_create(name='Python')
-sk2, _ = Skill.objects.get_or_create(name='Django')
-sk3, _ = Skill.objects.get_or_create(name='Machine Learning')
-sk4, _ = Skill.objects.get_or_create(name='SEO')
-sk5, _ = Skill.objects.get_or_create(name='Google Ads')
+skills = {}
+for skill_name, categories in skill_defs:
+    sk, _ = Skill.objects.get_or_create(name=skill_name, defaults={'active': True})
+    sk.active = True
+    sk.save()
+    sk.categories.set(categories)
+    skills[skill_name] = sk
 
-job1 = Job.objects.create(
-    title='Lập trình viên Python Backend (Django)', employer=comp1, category=c1,
-    location='Hồ Chí Minh', salary_min=15000000, salary_max=25000000,
-    deadline='2026-12-31', is_featured=True, active=True,
-    description='Phát triển các hệ thống API chất lượng cao bằng Django Rest Framework.',
-    requirements='Có tối thiểu 1 năm kinh nghiệm làm việc với Python. Hiểu về SQL và RESTful API.',
-    benefits='Lương tháng 13, thưởng dự án, bảo hiểm đầy đủ, du lịch hàng năm.',
-    experience_required=1
+job1, _ = Job.objects.get_or_create(
+    title='Lập trình viên Python Backend (Django)',
+    employer=comp1,
+    defaults={
+        'category': c1,
+        'location': 'Hồ Chí Minh',
+        'salary_min': 15000000,
+        'salary_max': 25000000,
+        'deadline': '2026-12-31',
+        'is_featured': True,
+        'active': True,
+        'description': 'Phát triển các hệ thống API chất lượng cao bằng Django Rest Framework.',
+        'requirements': 'Có tối thiểu 1 năm kinh nghiệm làm việc với Python. Hiểu về SQL và RESTful API.',
+        'benefits': 'Lương tháng 13, thưởng dự án, bảo hiểm đầy đủ, du lịch hàng năm.',
+        'experience_required': 1
+    }
 )
-# Gắn kỹ năng vào Job 1
-job1.skills.add(sk1, sk2)
+job1.category = c1
+job1.active = True
 job1.save()
+job1.skills.set([skills['Python'], skills['Django']])
 
-job2 = Job.objects.create(
-    title='Kỹ sư Trí tuệ nhân tạo (AI Engineer)', employer=comp1, category=c1,
-    location='Hồ Chí Minh', salary_min=25000000, salary_max=45000000,
-    deadline='2026-10-15', is_featured=False, active=True,
-    description='Nghiên cứu và triển khai các mô hình Học máy, Học sâu (Machine Learning/Deep Learning).',
-    requirements='Thành thạo Python, PyTorch hoặc TensorFlow. Có tư duy toán và thuật toán tốt.',
-    benefits='Làm việc trực tiếp với chuyên gia nước ngoài, trợ cấp thiết bị làm việc cấu hình cao.',
-    experience_required=2
+job2, _ = Job.objects.get_or_create(
+    title='Kỹ sư Trí tuệ nhân tạo (AI Engineer)',
+    employer=comp1,
+    defaults={
+        'category': c1,
+        'location': 'Hồ Chí Minh',
+        'salary_min': 25000000,
+        'salary_max': 45000000,
+        'deadline': '2026-10-15',
+        'is_featured': False,
+        'active': True,
+        'description': 'Nghiên cứu và triển khai các mô hình Học máy, Học sâu (Machine Learning/Deep Learning).',
+        'requirements': 'Thành thạo Python, PyTorch hoặc TensorFlow. Có tư duy toán và thuật toán tốt.',
+        'benefits': 'Làm việc trực tiếp với chuyên gia nước ngoài, trợ cấp thiết bị làm việc cấu hình cao.',
+        'experience_required': 2
+    }
 )
-# Gắn kỹ năng vào Job 2
-job2.skills.add(sk1, sk3)
+job2.category = c1
+job2.active = True
 job2.save()
+job2.skills.set([skills['Python'], skills['Machine Learning']])
 
-job3 = Job.objects.create(
-    title='Chuyên viên Tối ưu hóa Tìm kiếm (SEO Specialist)', employer=comp2, category=c2,
-    location='Hà Nội', salary_min=10000000, salary_max=18000000,
-    deadline='2026-08-20', is_featured=True, active=True,
-    description='Lên kế hoạch và tối ưu hóa từ khóa bài viết đẩy thứ hạng website công ty lên Google.',
-    requirements='Hiểu rõ thuật toán Google, có kinh nghiệm sử dụng Google Analytics, Ahrefs.',
-    benefits='Môi trường trẻ trung, sáng tạo, trà chiều mỗi ngày, thưởng KPI hấp dẫn.',
-    experience_required=0
+job3, _ = Job.objects.get_or_create(
+    title='Chuyên viên Tối ưu hóa Tìm kiếm (SEO Specialist)',
+    employer=comp2,
+    defaults={
+        'category': c2,
+        'location': 'Hà Nội',
+        'salary_min': 10000000,
+        'salary_max': 18000000,
+        'deadline': '2026-08-20',
+        'is_featured': True,
+        'active': True,
+        'description': 'Lên kế hoạch và tối ưu hóa từ khóa bài viết đẩy thứ hạng website công ty lên Google.',
+        'requirements': 'Hiểu rõ thuật toán Google, có kinh nghiệm sử dụng Google Analytics, Ahrefs.',
+        'benefits': 'Môi trường trẻ trung, sáng tạo, trà chiều mỗi ngày, thưởng KPI hấp dẫn.',
+        'experience_required': 0
+    }
 )
-# Gắn kỹ năng vào Job 3
-job3.skills.add(sk4, sk5)
+job3.category = c2
+job3.active = True
 job3.save()
+job3.skills.set([skills['SEO'], skills['Google Ads']])
+
+print("Seed dữ liệu hoàn tất với quan hệ nhiều-nhiều Skill <-> Category.")
+EOF
+
 echo "=== 5. Khởi động Máy chủ Django ==="
 python manage.py runserver

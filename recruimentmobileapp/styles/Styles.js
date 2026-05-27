@@ -236,18 +236,15 @@ const Styles = StyleSheet.create({
     dashJobCardInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
     dashJobCardLeft: { flex: 1, marginRight: 10 },
     dashJobTitle: { fontSize: 15, fontWeight: 'bold' },
-    dashJobMeta: { fontSize: 13, marginTop: 4 },
-    dashJobSalary: { fontSize: 13 },
-    dashJobDeadline: { fontSize: 12, marginTop: 2 },
     dashJobMetaContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: 6,
         marginTop: 4,
     },
-    dashJobMeta: { fontSize: 13, flex: 1 }, // Thêm flex: 1 để text tự động co giãn
-    dashJobSalary: { fontSize: 13, flex: 1 }, // Thêm flex: 1 để text tự động co giãn
-    dashJobDeadline: { fontSize: 12, marginTop: 4 },
+    dashJobMeta: { fontSize: 13, flex: 1, flexShrink: 1, lineHeight: 20 },
+    dashJobSalary: { fontSize: 13, flex: 1, flexShrink: 1, lineHeight: 20 },
+    dashJobDeadline: { fontSize: 12, marginTop: 4, lineHeight: 18 },
     //employer stats
     statsSafeArea: {
         flex: 1,

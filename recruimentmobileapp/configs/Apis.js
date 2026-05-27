@@ -13,6 +13,7 @@ export const endpoints = {
     'jobs': '/jobs/',
     'apply-job': '/applications/',
     'save-job': (jobId) => `/jobs/${jobId}/save/`,
+    'delete-job': (jobId) => `/jobs/${jobId}/`,
     'company-details': (id) => `/companies/${id}/`, 
     'approve-company': (id) => `/companies/${id}/approve/`,
     'employer-jobs': '/jobs/', 
