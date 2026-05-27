@@ -1,7 +1,7 @@
 // screens/Employer/EmployerDashboard.js
 import React, { useState, useEffect, useContext } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
-import { Card, Text, ActivityIndicator, Avatar, Button, Chip } from 'react-native-paper';
+import { Card, Text, ActivityIndicator, Avatar, Button, Chip, Icon } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect} from '@react-navigation/native';
 import Apis,{ authApis, endpoints } from '../../configs/Apis';
@@ -177,12 +177,18 @@ const EmployerDashboard = () => {
                                     <Text style={[Styles.dashJobTitle, { color: COLORS.textDarker }]} numberOfLines={2}>
                                         {job.title}
                                     </Text>
-                                    <Text style={[Styles.dashJobMeta, { color: COLORS.textLight }]}>
-                                        📍 {job.location}
-                                    </Text>
-                                    <Text style={[Styles.dashJobSalary, { color: COLORS.textLight }]}>
-                                        💰 {Number(job.salary_min).toLocaleString('vi-VN')} – {Number(job.salary_max).toLocaleString('vi-VN')} đ
-                                    </Text>
+                                    <View style={Styles.dashJobMetaContainer}>
+                                        <Icon source="map-marker-outline" size={14} color={COLORS.textLight} />
+                                        <Text style={[Styles.dashJobMeta, { color: COLORS.textLight }]} numberOfLines={1}>
+                                            {job.location}
+                                        </Text>
+                                    </View>
+                                    <View style={Styles.dashJobMetaContainer}>
+                                        <Icon source="cash" size={14} color={COLORS.textLight} />
+                                        <Text style={[Styles.dashJobSalary, { color: COLORS.textLight }]} numberOfLines={1}>
+                                            {Number(job.salary_min).toLocaleString('vi-VN')} – {Number(job.salary_max).toLocaleString('vi-VN')} đ
+                                        </Text>
+                                    </View>
                                     <Text style={[Styles.dashJobDeadline, { color: COLORS.textMuted }]}>
                                         Hạn nộp: {new Date(job.deadline).toLocaleDateString('vi-VN')}
                                     </Text>

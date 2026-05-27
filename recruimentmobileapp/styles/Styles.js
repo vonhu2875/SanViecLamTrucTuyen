@@ -238,7 +238,189 @@ const Styles = StyleSheet.create({
     dashJobTitle: { fontSize: 15, fontWeight: 'bold' },
     dashJobMeta: { fontSize: 13, marginTop: 4 },
     dashJobSalary: { fontSize: 13 },
-    dashJobDeadline: { fontSize: 12, marginTop: 2 }
+    dashJobDeadline: { fontSize: 12, marginTop: 2 },
+    dashJobMetaContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 4,
+    },
+    dashJobMeta: { fontSize: 13, flex: 1 }, // Thêm flex: 1 để text tự động co giãn
+    dashJobSalary: { fontSize: 13, flex: 1 }, // Thêm flex: 1 để text tự động co giãn
+    dashJobDeadline: { fontSize: 12, marginTop: 4 },
+    //employer stats
+    statsSafeArea: {
+        flex: 1,
+        backgroundColor: '#F9FAFB',
+    },
+    statsContainer: {
+        flex: 1,
+    },
+    statsContent: {
+        padding: 16,
+    },
+    statsHeader: {
+        paddingTop: 40, // Đẩy chữ thấp xuống né tai thỏ điện thoại giống ApplicantList
+        marginBottom: 20,
+    },
+    statsHeaderTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#111827',
+    },
+    statsHeaderSub: {
+        fontSize: 14,
+        color: '#6B7280',
+        marginTop: 4,
+    },
+    statsLoadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F9FAFB',
+    },
+    statsCardsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 24,
+        gap: 8,
+    },
+    statsCard: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+    },
+    statsIconWrapper: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    statsCardValue: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#111827',
+    },
+    statsCardLabel: {
+        fontSize: 11,
+        color: '#6B7280',
+        marginTop: 2,
+        textAlign: 'center',
+    },
+    statsSectionCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+    },
+    statsSectionTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 16,
+    },
+    statsSectionTitle: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#374151',
+    },
+    statsEmptyText: {
+        textAlign: 'center',
+        color: '#9CA3AF',
+        paddingVertical: 20,
+        fontStyle: 'italic',
+    },
+    statsStatusList: {
+        gap: 12,
+    },
+    statsStatusRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    statsStatusInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        width: 100,
+    },
+    statsStatusLabel: {
+        fontSize: 13,
+        color: '#4B5563',
+    },
+    statsBarContainer: {
+        flex: 1,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#F3F4F6',
+        overflow: 'hidden',
+    },
+    statsBarFill: {
+        height: '100%',
+        borderRadius: 4,
+    },
+    statsStatusCount: {
+        fontSize: 13,
+        fontWeight: '600',
+        minWidth: 24,
+        textAlign: 'right',
+    },
+    statsChartContainer: {
+        paddingTop: 8,
+    },
+    statsBarsRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        height: 140,
+        paddingHorizontal: 4,
+    },
+    statsBarWrapper: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: 3,
+    },
+    statsBar: {
+        width: '70%',
+        borderRadius: 3,
+        minHeight: 2,
+    },
+    statsBarCountLabel: {
+        fontSize: 9,
+        color: '#6B7280',
+        fontWeight: '600',
+    },
+    statsBarMonthLabel: {
+        fontSize: 9,
+        color: '#9CA3AF',
+        marginTop: 4,
+    },
+    statsAlertBox: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFBEB',
+        borderColor: '#FDE68A',
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 12,
+        gap: 8,
+        marginBottom: 20,
+    },
+    statsAlertText: {
+        flex: 1,
+        fontSize: 13,
+        color: '#92400E',
+        lineHeight: 18,
+    }
 });
 
 export default Styles;
+
+

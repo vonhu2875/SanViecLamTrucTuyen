@@ -22,6 +22,7 @@ import Profile from './screens/User/Profile';
 import Login from './screens/User/Login';
 import Home from './screens/Home/Home';
 import EmployerDashboard from './screens/Employer/EmployerDashboard';
+import ApplicationDetail from './screens/Employer/ApplicationDetail';
 
 import ApplicantList from './screens/Employer/ApplicantList';
 const Stack = createStackNavigator();
@@ -116,11 +117,10 @@ function MainTabs() {
 
 export default function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
-
+ 
   return (
     <PaperProvider>
       <MyUserContext.Provider value={[user, dispatch]}>        
-        {/* ĐƯA EMPLOYERPROVIDER RA ĐÂY: Nằm ngoài Navigator để tránh lỗi cấu trúc */}
         <EmployerProvider> 
           <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -130,52 +130,40 @@ export default function App() {
                   <Stack.Screen name="onboarding" component={Onboarding} />
                   <Stack.Screen name="login" component={Login} />
                   <Stack.Screen name="register" component={Register} options={{ 
-                      headerShown: true,
-                      title: 'Đăng nhập',
-                      headerTintColor: '#F2A0B6'
-                    }}
-                    />
+                    headerShown: true,
+                    title: 'Đăng ký',
+                    headerTintColor: '#F2A0B6'
+                  }} />
                 </>
               ) : (
-              <>
-                  <Stack.Screen name="MainApp" component={MainTabs} />
-              </>
-            )}
-            <Stack.Screen name="JobDetail" component={JobDetail} options={{ 
+                <Stack.Screen name="MainApp" component={MainTabs} />
+              )}
+ 
+              <Stack.Screen name="JobDetail" component={JobDetail} options={{ 
                 headerShown: true,
                 title: 'Chi tiết công việc',
                 headerTintColor: '#F2A0B6'
-              }}
-            />
-            
-            <Stack.Screen name="ApplyJob" component={ApplyJob} 
-                options={{ 
-                  headerShown: true, 
-                  title: 'Nộp hồ sơ ứng tuyển',
-                  headerTintColor: '#F2A0B6'
-                }} 
-            />
-            <Stack.Screen 
-                name="PostJob" 
-                component={PostJob} 
-                options={{ 
-                  headerShown: true,
-                  headerTintColor: '#F2A0B6',
-                  title: 'Đăng Tin Tuyển Dụng',
-                }} 
-            />
-            <Stack.Screen
-              name="StackApplicantList"
-              component={ApplicantList}
-              options={{ headerShown: true, 
-              tabBarLabel: 'Ứng viên',
-              headerTintColor: '#F2A0B6',
-              title: 'Danh sách ứng viên',
-                tabBarIcon: ({ color, size }) => (
-                <IconButton icon="account-group-outline" iconColor={color} size={size} style={{ margin: 0 }}/>
-              )
-              }}
-            />
+              }} />
+              <Stack.Screen name="ApplyJob" component={ApplyJob} options={{ 
+                headerShown: true, 
+                title: 'Nộp hồ sơ ứng tuyển',
+                headerTintColor: '#F2A0B6'
+              }} />
+              <Stack.Screen name="PostJob" component={PostJob} options={{ 
+                headerShown: true,
+                headerTintColor: '#F2A0B6',
+                title: 'Đăng Tin Tuyển Dụng',
+              }} />
+              <Stack.Screen name="StackApplicantList" component={ApplicantList} options={{
+                headerShown: true,
+                headerTintColor: '#F2A0B6',
+                title: 'Danh sách ứng viên',
+              }} />
+              <Stack.Screen name="ApplicationDetail" component={ApplicationDetail} options={{ 
+                headerShown: true,
+                title: 'Chi tiết hồ sơ',
+                headerTintColor: '#F2A0B6'
+              }} />
             </Stack.Navigator>
           </NavigationContainer>
         </EmployerProvider>
@@ -183,3 +171,29 @@ export default function App() {
     </PaperProvider>
   );
 }
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
