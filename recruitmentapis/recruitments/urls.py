@@ -10,8 +10,9 @@ router.register('applications',views.ApplicationViewSet, basename='applications'
 router.register('stats',views.StatsViewSet, basename='stats')
 router.register('categories', viewset=views.CategoryViewset, basename='categories')
 router.register('skills',views.SkillViewSet, basename='skills')
+router.register('payments', views.PaymentViewSet, basename='payments')
 
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
 ]

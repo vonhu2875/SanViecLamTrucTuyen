@@ -1,7 +1,7 @@
+from datetime import datetime
 from rest_framework import serializers
-from recruitments.models import User, Company, Application, Job, Category, Skill
-from django.utils.html import strip_tags
-import html
+from recruitments.models import User, Company, Application, Job, Category, Skill, Payment
+
 
 class ItemSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
@@ -25,7 +25,7 @@ class CompanyShortSerializer(serializers.ModelSerializer):
 class SimpleUserSerializer(ItemSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'avatar']
+        fields = ['first_name', 'last_name', 'email', 'avatar', 'phone']
 
 class UserSerializer(ItemSerializer):
     company = CompanyShortSerializer(read_only=True)
@@ -49,17 +49,36 @@ class UserSerializer(ItemSerializer):
         return avatar
 
     def validate_email(self, email):
+
         if not email:
-            raise serializers.ValidationError("Email không được để trống")
+            raise serializers.ValidationError(
+                "Email không được để trống"
+            )
+
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError(
+                "Email đã tồn tại"
+            )
         return email
 
-    def create(self, validated_data):
-        user = User(**validated_data)
-        user.set_password(user.password)
 
-        user.is_staff = False
-        user.is_superuser = False
-        user.save()
+    def create(self, validated_data):
+        # 1. Lấy role ra để kiểm tra trước
+        role = validated_data.get('role', 'candidate')
+
+        # 2. GIỮ NGUYÊN: Gọi hàm này của Django để băm mật khẩu an toàn
+        user = User.objects.create_user(**validated_data)
+
+        # 3. VIẾT THÊM: Nếu role là employer, tự động tạo hồ sơ công ty rỗng gắn với user vừa tạo
+        if role == 'employer':
+            Company.objects.create(
+                user=user,
+                name=f"Công ty của {user.username}",  # Tên tạm thời
+                description="Chưa có mô tả chi tiết",
+                address="Chưa cập nhật địa chỉ",
+                is_approved=False,  # Mặc định chưa được duyệt
+                active=True
+            )
 
         return user
 
@@ -75,6 +94,7 @@ class CompanySerializer(CompanySimpleSerializer):
 
         fields = CompanySimpleSerializer.Meta.fields + ['id', 'is_approved', 'created_date', 'updated_date']
         read_only_fields = ['created_date', 'updated_date', 'is_approved']
+
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -155,19 +175,29 @@ class JobDetailSerializer(JobSimpleSerializer):
         else:
             data['saved'] = False
 
-        if instance.description:
-            unescaped_desc = html.unescape(instance.description)
-            data['description'] = strip_tags(unescaped_desc).strip()
-
-        if instance.requirements:
-            unescaped_req = html.unescape(instance.requirements)
-            data['requirements'] = strip_tags(unescaped_req).strip()
-
-        if instance.benefits:
-            unescaped_ben = html.unescape(instance.benefits)
-            data['benefits'] = strip_tags(unescaped_ben).strip()
-
         return data
+
+    def validate(self, attrs):
+        salary_min = attrs.get('salary_min')
+        salary_max = attrs.get('salary_max')
+        deadline = attrs.get('deadline')
+
+        if salary_min is not None and salary_max is not None:
+            if salary_min < 0 or salary_max < 0:
+                raise serializers.ValidationError(
+                    "Lương không được âm"
+                )
+
+        if salary_min > salary_max:
+            raise serializers.ValidationError(
+                "salary_min phải nhỏ hơn salary_max"
+            )
+        if deadline and deadline < datetime.now().date():
+            raise serializers.ValidationError({
+                "deadline": "Hạn nộp hồ sơ phải lớn hơn ngày hiện tại"
+            })
+
+        return attrs
 
 class ApplicantCandidateSerializer(ItemSerializer):
     class Meta:
@@ -196,10 +226,6 @@ class ApplicationReviewSerializer(serializers.ModelSerializer):
         model = Application
         fields = ['status', 'employer_comment']
 
-
-
-
-
 # Cho thống kê của Nhà tuyển dụng
 class EmployerStatsSerializer(serializers.Serializer):
     pass
@@ -207,3 +233,9 @@ class EmployerStatsSerializer(serializers.Serializer):
 # Cho thống kê tổng quan của Admin
 class AdminStatsSerializer(serializers.Serializer):
     pass
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'job', 'method', 'status', 'amount', 'description', 'created_date']
+        read_only_fields = ['status', 'created_date']

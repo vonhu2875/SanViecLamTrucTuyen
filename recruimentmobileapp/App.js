@@ -126,8 +126,8 @@ export default function App() {
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               {user === null ? (
                 <>
-                  <Stack.Screen name="splash" component={Splash} />
-                  <Stack.Screen name="onboarding" component={Onboarding} />
+                  {/* <Stack.Screen name="splash" component={Splash} />
+                  <Stack.Screen name="onboarding" component={Onboarding} /> */}
                   <Stack.Screen name="login" component={Login} />
                   <Stack.Screen name="register" component={Register} options={{ 
                       headerShown: true,

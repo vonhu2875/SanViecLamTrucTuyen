@@ -1,7 +1,9 @@
 {
   "expo": {
     "name": "JOBMATE",
+    "owner": "vonhu2875",
     "slug": "jobmate",
+    "scheme": "recruitmentsapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,9 +14,11 @@
       "backgroundColor": "#F2A0B6"
     },
     "ios": {
+      "bundleIdentifier": "com.recruitmentsapp.jobapp",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.recruitmentsapp.jobapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#F2A0B6"
@@ -24,7 +28,13 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "@react-native-community/datetimepicker"
-    ]
+      "@react-native-community/datetimepicker",
+      "expo-web-browser"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2149fde5-a60b-4416-b6b5-b4ac1dcd72d1"
+      }
+    }
   }
 }
