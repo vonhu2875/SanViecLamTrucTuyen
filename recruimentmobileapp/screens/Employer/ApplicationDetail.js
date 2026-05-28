@@ -57,13 +57,18 @@ const ApplicationDetail = () => {
                         setSaving(true);
                         try {
                             const token = await AsyncStorage.getItem('token');
-                            await authApis(token).patch(
+                            const payload = {
+                                status: newStatus,
+                                employer_comment: comment.trim() || `Đã cập nhật: ${newCfg.label}`,
+                            };
+                            const res = await authApis(token).patch(
                                 `${endpoints['applications']}${app.id}/review/`,
-                                { status: newStatus, employer_comment: comment.trim() || `Đã cập nhật: ${newCfg.label}` }
+                                payload
                             );
-                            const updated = { ...app, status: newStatus, employer_comment: comment.trim() };
+                            const updated = res.data || { ...app, ...payload };
                             setApp(updated);
-                            if (onStatusUpdate) onStatusUpdate(app.id, newStatus);
+                            setComment(updated.employer_comment || '');
+                            if (onStatusUpdate) onStatusUpdate(updated);
                             Alert.alert('Thành công', `Đã cập nhật: ${newCfg.label}`);
                         } catch (err) {
                             Alert.alert('Lỗi', 'Không thể cập nhật trạng thái.');
@@ -81,11 +86,15 @@ const ApplicationDetail = () => {
         setSaving(true);
         try {
             const token = await AsyncStorage.getItem('token');
-            await authApis(token).patch(
+            const payload = { status: app.status, employer_comment: comment.trim() };
+            const res = await authApis(token).patch(
                 `${endpoints['applications']}${app.id}/review/`,
-                { status: app.status, employer_comment: comment.trim() }
+                payload
             );
-            setApp(prev => ({ ...prev, employer_comment: comment.trim() }));
+            const updated = res.data || { ...app, ...payload };
+            setApp(updated);
+            setComment(updated.employer_comment || '');
+            if (onStatusUpdate) onStatusUpdate(updated);
             Alert.alert('Đã lưu', 'Nhận xét của bạn đã được lưu.');
         } catch (err) {
             Alert.alert('Lỗi', 'Không thể lưu nhận xét.');
@@ -138,6 +147,7 @@ const ApplicationDetail = () => {
                     </View>
                     <View style={styles.infoBlock}>
                         <InfoRow icon="email-outline"    label="Email"    value={app.candidate?.email} />
+                        <InfoRow icon="phone-outline"    label="SĐT"      value={app.candidate?.phone} />
                         <InfoRow icon="calendar-outline" label="Ngày nộp" value={
                             app.created_date ? new Date(app.created_date).toLocaleDateString('vi-VN') : null
                         } />

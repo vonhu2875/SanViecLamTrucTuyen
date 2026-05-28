@@ -47,10 +47,8 @@ const EmployerDashboard = () => {
         const found = stats.applications_by_status.find(s => s.status === statusName);
         return found ? found.count : 0;
     };
-    // Tính tổng đã được xem xét = reviewed + accepted + rejected
     const getReviewedCount = () => {
-        if (!stats?.applications_by_status) return 0;
-        return ['reviewed', 'accepted', 'rejected'].reduce((sum, s) => sum + getStatusCount(s), 0);
+        return stats?.reviewed_by_comment || 0;
     };
 
     if (loading) {

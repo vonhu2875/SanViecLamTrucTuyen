@@ -53,10 +53,14 @@ const ApplicantList = () => {
 
     useEffect(() => { fetchApplications(); }, [jobId]);
 
+    const hasEmployerComment = (application) => {
+        return !!(application?.employer_comment && application.employer_comment.trim());
+    };
+
     useEffect(() => {
         let result = [...apps];
         if (activeFilter === 'reviewed') {
-            result = result.filter(a => ['reviewed', 'accepted', 'rejected'].includes(a.status));
+            result = result.filter(a => hasEmployerComment(a));
         } else if (activeFilter !== 'all') {
             result = result.filter(a => a.status === activeFilter);
         }
@@ -73,19 +77,15 @@ const ApplicantList = () => {
     }, [activeFilter, searchQuery, apps]);
 
     const statusCounts = useMemo(() => {
-        const baseCounts = apps.reduce((acc, app) => {
+        return apps.reduce((acc, app) => {
             if (acc[app.status] !== undefined) acc[app.status] += 1;
+            if (hasEmployerComment(app)) acc.reviewed += 1;
             return acc;
         }, { pending: 0, reviewed: 0, accepted: 0, rejected: 0 });
-
-        return {
-            ...baseCounts,
-            reviewed: baseCounts.reviewed + baseCounts.accepted + baseCounts.rejected,
-        };
     }, [apps]);
 
-    const handleStatusUpdate = (id, newStatus) => {
-        setApps(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
+    const handleStatusUpdate = (updatedApplication) => {
+        setApps(prev => prev.map(a => a.id === updatedApplication.id ? { ...a, ...updatedApplication } : a));
     };
 
     const renderItem = ({ item }) => {

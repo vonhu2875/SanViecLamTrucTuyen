@@ -217,24 +217,54 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Chuyển chuỗi "1,2,3" thành mảng số nguyên [1, 2, 3]
             job_ids = [int(x) for x in ids_param.split(',')]
-            if len(job_ids) > 5:
-                return Response(
-                    {
-                        "detail": "Chỉ được so sánh tối đa 5 công việc"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            if len(job_ids) < 2:
+                return Response({"detail": "Cần ít nhất 2 công việc để so sánh."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if len(job_ids) > 4:
+                return Response({"detail": "Chỉ được so sánh tối đa 4 công việc."},
+                                status=status.HTTP_400_BAD_REQUEST)
         except ValueError:
             return Response({"detail": "Định dạng ids không hợp lệ."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Lấy ra các công việc nằm trong danh sách lựa chọn
-        jobs = Job.objects.filter(id__in=job_ids, active=True, employer__is_approved=True)
+        jobs = Job.objects.filter(id__in=job_ids, active=True, employer__is_approved=True).select_related(
+            'employer', 'category'
+        ).prefetch_related('skills')
 
-        # Dùng JobDetailSerializer để hiển thị đầy đủ tiêu chí: lương, kinh nghiệm, phúc lợi (benefits)...
-        serializer = serializers.JobDetailSerializer(jobs, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if not jobs.exists():
+            return Response({"detail": "Không tìm thấy công việc hợp lệ."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Dữ liệu chi tiết từng job
+        jobs_data = serializers.JobDetailSerializer(jobs, many=True, context={'request': request}).data
+
+        # --- Thống kê tổng hợp để vẽ chart ---
+        salary_chart = []
+        from datetime import date
+        today = date.today()
+
+        for job in jobs:
+            benefits_score = job.skills.count()
+            days_left = (job.deadline - today).days if job.deadline >= today else 0
+            salary_min = float(job.salary_min or 0)
+            salary_max = float(job.salary_max or 0)
+
+            salary_chart.append({
+                "job_id": job.id,
+                "job_title": job.title,
+                "salary_min": salary_min,
+                "salary_max": salary_max,
+                "salary_avg": (salary_min + salary_max) / 2,
+                "experience_years": job.experience_required or 0,
+                "benefits_score": benefits_score,
+                "days_until_deadline": max(days_left, 0),
+                "location": job.location,
+                "category": job.category.name if job.category else '',
+            })
+
+        return Response({
+            "jobs": jobs_data,
+            "comparison_stats": salary_chart,
+        }, status=status.HTTP_200_OK)
 
 
 class ApplicationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
@@ -319,6 +349,11 @@ class StatsViewSet(viewsets.ViewSet):
         status_stats = Application.objects.filter(job__employer=company, active=True) \
             .values('status') \
             .annotate(count=Count('id'))
+        reviewed_by_comment = Application.objects.filter(
+            job__employer=company,
+            active=True,
+            employer_comment__isnull=False
+        ).exclude(employer_comment__exact='').count()
 
         # Thống kê số lượng đơn ứng tuyển nộp vào theo từng Tháng trong Năm nay
         # Lấy năm hiện tại
@@ -338,6 +373,7 @@ class StatsViewSet(viewsets.ViewSet):
             "company_name": company.name,
             "total_applications": total_applications,
             "applications_by_status": list(status_stats),
+            "reviewed_by_comment": reviewed_by_comment,
             "monthly_applications": list(monthly_applications)
         }
         return Response(data, status=status.HTTP_200_OK)

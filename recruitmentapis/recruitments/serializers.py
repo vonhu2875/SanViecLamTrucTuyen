@@ -209,7 +209,7 @@ class JobDetailSerializer(JobSimpleSerializer):
 class ApplicantCandidateSerializer(ItemSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'avatar']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'phone', 'avatar']
 
 class ApplicationSerializer(serializers.ModelSerializer):
     candidate = ApplicantCandidateSerializer(read_only=True)

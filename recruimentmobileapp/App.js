@@ -24,8 +24,8 @@ import Home from './screens/Home/Home';
 import EmployerDashboard from './screens/Employer/EmployerDashboard';
 import ApplicationDetail from './screens/Employer/ApplicationDetail';
 import CompanyDetail from './screens/Employer/CompanyDetail';
-
 import ApplicantList from './screens/Employer/ApplicantList';
+import CompareScreen from './screens/User/CompareScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -143,6 +143,11 @@ export default function App() {
               <Stack.Screen name="JobDetail" component={JobDetail} options={{ 
                 headerShown: true,
                 title: 'Chi tiết công việc',
+                headerTintColor: '#F2A0B6'
+              }} />
+              <Stack.Screen name="CompareJobs" component={CompareScreen} options={{ 
+                headerShown: true,
+                title: 'So sánh công việc',
                 headerTintColor: '#F2A0B6'
               }} />
               <Stack.Screen name="ApplyJob" component={ApplyJob} options={{ 
