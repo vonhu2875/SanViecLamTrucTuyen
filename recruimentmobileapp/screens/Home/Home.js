@@ -21,6 +21,26 @@ const Home = ({ navigation }) => {
     const [ordering, setOrdering] = useState('-created_date'); 
     const [showFilter, setShowFilter] = useState(false); 
 
+    // State quản lý danh sách so sánh
+    const [compareList, setCompareList] = useState([]); // mảng job objects đã chọn
+    const hasCompareBar = compareList.length >= 2;
+
+    const toggleCompare = (job) => {
+        setCompareList(prev => {
+            const exists = prev.find(j => j.id === job.id);
+            if (exists) return prev.filter(j => j.id !== job.id);
+            if (prev.length >= 4) {
+                Alert.alert('Giới hạn', 'Chỉ được chọn tối đa 4 công việc để so sánh.');
+                return prev;
+            }
+            return [...prev, job];
+        });
+    };
+
+    const clearCompare = () => {
+        setCompareList([]);
+    };
+
     // State phục vụ phân trang vô tận
     const [nextPageUrl, setNextPageUrl] = useState(null);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -104,34 +124,56 @@ const Home = ({ navigation }) => {
         return `${num.toFixed(0)} triệu`;
     };
 
-    const renderJobItem = ({ item }) => (
-        <Card 
-            style={[styles.jobCard, item.is_featured && styles.featuredCard]} 
-            onPress={() => navigation.navigate('JobDetail', { jobId: item.id })} 
-        >
-            <Card.Content style={styles.cardContent}>
-                <Image 
-                    source={item.employer?.logo ? { uri: item.employer.logo } : require('../../assets/icon.png')} 
-                    style={styles.companyLogo}
-                />
-                <View style={styles.infoContainer}>
-                    <Text style={styles.jobTitle} numberOfLines={2}>{item.title}</Text>
-                    <Text style={styles.companyName} numberOfLines={1}>{item.employer?.name}</Text>
-                    
-                    <View style={styles.tagContainer}>
-                        <Chip icon="map-marker" style={styles.chip} textStyle={styles.chipText}>{item.location}</Chip>
-                        <Chip icon="cash" style={styles.salaryChip} textStyle={styles.salaryChipText}>
-                            {formatSalary(item.salary_min)} - {formatSalary(item.salary_max)}
-                        </Chip>
+    const renderJobItem = ({ item }) => {
+        const isSelected = compareList.some(j => j.id === item.id);
+        return (
+            <Card 
+                style={[styles.jobCard, item.is_featured && styles.featuredCard, isSelected && styles.selectedCard]} 
+                onPress={() => navigation.navigate('JobDetail', { jobId: item.id })} 
+            >
+                <Card.Content style={styles.cardContent}>
+                    <Image 
+                        source={item.employer?.logo ? { uri: item.employer.logo } : require('../../assets/icon.png')} 
+                        style={styles.companyLogo}
+                    />
+                    <View style={styles.infoContainer}>
+                        <Text style={styles.jobTitle} numberOfLines={2}>{item.title}</Text>
+                        <Text style={styles.companyName} numberOfLines={1}>{item.employer?.name}</Text>
+                        
+                        <View style={styles.tagContainer}>
+                            <Chip icon="map-marker" style={styles.chip} textStyle={styles.chipText} compact={false}>
+                                {item.location}
+                            </Chip>
+                            <Chip icon="cash" style={styles.salaryChip} textStyle={styles.salaryChipText} compact={false}>
+                                {formatSalary(item.salary_min)} - {formatSalary(item.salary_max)}
+                            </Chip>
+                        </View>
                     </View>
-                </View>
 
-                {item.is_featured && (
-                    <IconButton icon="star" iconColor="#FFD700" size={20} style={styles.starIcon} />
-                )}
-            </Card.Content>
-        </Card>
-    );
+                    {item.is_featured && (
+                        <IconButton icon="star" iconColor="#FFD700" size={20} style={styles.starIcon} />
+                    )}
+                </Card.Content>
+
+                {/* Nút chọn so sánh — góc dưới phải card */}
+                <TouchableOpacity
+                    style={[styles.compareToggleBtn, isSelected && styles.compareToggleBtnActive]}
+                    onPress={() => toggleCompare(item)}
+                    activeOpacity={0.8}
+                >
+                    <IconButton
+                        icon={isSelected ? "check-circle" : "plus-circle-outline"}
+                        iconColor={isSelected ? "#fff" : "#F2A0B6"}
+                        size={16}
+                        style={{ margin: 0 }}
+                    />
+                    <Text style={[styles.compareToggleText, isSelected && { color: '#fff' }]}>
+                        {isSelected ? 'Đã chọn' : 'So sánh'}
+                    </Text>
+                </TouchableOpacity>
+            </Card>
+        );
+    };
 
     return (
         <SafeAreaView style={Styles.safeArea}>
@@ -237,7 +279,10 @@ const Home = ({ navigation }) => {
                     data={jobs}
                     renderItem={renderJobItem}
                     keyExtractor={item => item.id.toString()}
-                    contentContainerStyle={styles.listContainer}
+                    contentContainerStyle={[
+                        styles.listContainer,
+                        hasCompareBar && styles.listContainerWithCompareBar,
+                    ]}
                     refreshing={loading}
                     onRefresh={() => fetchJobs(true)}
                     onEndReached={loadMoreJobs}
@@ -247,6 +292,37 @@ const Home = ({ navigation }) => {
                         <Text style={styles.emptyText}>Hiện tại chưa có công việc nào phù hợp.</Text>
                     }
                 />
+            )}
+            {/* FLOATING BAR SO SÁNH */}
+            {hasCompareBar && (
+                <View style={styles.floatingCompareBar}>
+                    <View style={styles.floatingCompareHeader}>
+                        <TouchableOpacity
+                            style={styles.floatingCompareAction}
+                            onPress={() => navigation.navigate('CompareJobs', { jobIds: compareList.map(j => j.id) })}
+                            activeOpacity={0.9}
+                        >
+                            <IconButton icon="swap-horizontal" iconColor="#fff" size={20} style={{ margin: 0 }} />
+                            <Text style={styles.floatingCompareText}>
+                                So sánh {compareList.length} việc làm
+                            </Text>
+                        </TouchableOpacity>
+                        <IconButton
+                            icon="close"
+                            iconColor="#fff"
+                            size={18}
+                            style={styles.floatingCloseBtn}
+                            onPress={clearCompare}
+                        />
+                    </View>
+                    <View style={styles.floatingBadgeRow}>
+                        {compareList.map(j => (
+                            <View key={j.id} style={styles.floatingBadge}>
+                                <Text style={styles.floatingBadgeText} numberOfLines={1}>{j.title}</Text>
+                            </View>
+                        ))}
+                    </View>
+                </View>
             )}
         </SafeAreaView>
     );
@@ -295,6 +371,7 @@ const styles = StyleSheet.create({
     sortLabel: { fontSize: 13, color: '#555', fontWeight: '500', marginRight: 10 },
     sortButton: { marginRight: 8 },
     listContainer: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 30 },
+    listContainerWithCompareBar: { paddingBottom: 170 },
     jobCard: { backgroundColor: '#ffffff', borderRadius: 15, marginBottom: 12, marginVertical: 8, elevation: 2 },
     featuredCard: { borderLeftWidth: 5, borderLeftColor: '#F2A0B6' },
     cardContent: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
@@ -302,13 +379,70 @@ const styles = StyleSheet.create({
     infoContainer: { flex: 1, marginLeft: 15, justifyContent: 'center' },
     jobTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', paddingRight: 10 },
     companyName: { fontSize: 14, color: '#666', marginTop: 2 },
-    tagContainer: { flexDirection: 'row', marginTop: 10, flexWrap: 'wrap' },
-    chip: { backgroundColor: '#f0f0f0', marginRight: 6, height: 28, justifyContent: 'space-evenly', alignItems:'stretch', marginBottom: 6 },
-    chipText: { fontSize: 11, color: '#555' },
-    salaryChip: { backgroundColor: '#FFEBF0', height: 28, justifyContent: 'center' },
-    salaryChipText: { fontSize: 11, color: '#F2A0B6', fontWeight: '600' },
+    tagContainer: { flexDirection: 'row', marginTop: 10, flexWrap: 'wrap', gap: 6 },
+    chip: {
+        backgroundColor: '#f0f0f0',
+        alignSelf: 'flex-start',
+        maxWidth: '100%',
+        marginBottom: 4,
+        paddingVertical: 4,
+    },
+    chipText: { fontSize: 12, color: '#555', lineHeight: 18 },
+    salaryChip: {
+        backgroundColor: '#FFEBF0',
+        alignSelf: 'flex-start',
+        maxWidth: '100%',
+        marginBottom: 4,
+        paddingVertical: 4,
+    },
+    salaryChipText: { fontSize: 12, color: '#F2A0B6', fontWeight: '600', lineHeight: 18 },
     starIcon: { margin: 0, position: 'absolute', top: 5, right: 5 },
     emptyText: { textAlign: 'center', marginTop: 40, color: '#888' },
+
+    // So sánh
+    selectedCard: { borderWidth: 2, borderColor: '#F2A0B6', backgroundColor: '#FFF5F7' },
+    compareToggleBtn: {
+        flexDirection: 'row', alignItems: 'center',
+        alignSelf: 'flex-end',
+        marginRight: 12, marginBottom: 8,
+        paddingHorizontal: 10, paddingVertical: 4,
+        borderRadius: 20, borderWidth: 1, borderColor: '#F2A0B6',
+        backgroundColor: '#fff',
+        gap: 2,
+    },
+    compareToggleBtnActive: { backgroundColor: '#F2A0B6', borderColor: '#F2A0B6' },
+    compareToggleText: { fontSize: 12, color: '#F2A0B6', fontWeight: '600' },
+
+    floatingCompareBar: {
+        position: 'absolute', bottom: 16, left: 16, right: 16,
+        backgroundColor: '#F2A0B6',
+        borderRadius: 16, padding: 14,
+        elevation: 8,
+        shadowColor: '#F2A0B6', shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 4 },
+    },
+    floatingCompareHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    floatingCompareAction: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        flex: 1,
+    },
+    floatingCompareText: { fontSize: 15, fontWeight: 'bold', color: '#fff' },
+    floatingCloseBtn: {
+        margin: 0,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+    },
+    floatingBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+    floatingBadge: {
+        backgroundColor: 'rgba(255,255,255,0.25)',
+        borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3,
+        maxWidth: 140,
+    },
+    floatingBadgeText: { fontSize: 11, color: '#fff' },
 });
 
 export default Home;

@@ -165,5 +165,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CLIENT_ID = 'EBi1MkqKzOItn2QRxb4kT7HA7VYWVEpDl1baYIwQ'
 CLIENT_SECRET = 'RaVYSKih82FyqZBQQY9AluzpfzhaVdwnXtnKfJxhxBnxLwfY6wjvaPLVX14FAxXSiMWauUEd61bjJjaSxkGIikRkkS51U96tyFaupmDEQZMm9BdbsZWt8296gh9Adq7t'
-
-GOOGLE_CLIENT_ID = '908421020023-chl2k6almgbg82vjkcng40pvpdlonob6.apps.googleusercontent.com'

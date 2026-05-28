@@ -136,9 +136,15 @@ class JobSimpleSerializer(serializers.ModelSerializer):
             'deadline', 'is_featured', 'employer', 'category', 'active'
         ]
 class SkillSerializer(serializers.ModelSerializer):
+    category_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=True,
+        source='categories'
+    )
+
     class Meta:
         model = Skill
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'category_ids']
 
 
 class JobDetailSerializer(JobSimpleSerializer):
@@ -202,16 +208,19 @@ class JobDetailSerializer(JobSimpleSerializer):
 class ApplicantCandidateSerializer(ItemSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'avatar']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'phone', 'avatar']
 
 class ApplicationSerializer(serializers.ModelSerializer):
     candidate = ApplicantCandidateSerializer(read_only=True)
     job_title = serializers.CharField(source='job.title', read_only=True)
+    job_location = serializers.CharField(source='job.location', read_only=True)
+    company_name = serializers.CharField(source='job.employer.name', read_only=True)
+
     class Meta:
         model = Application
         fields = [
             'id', 'job', 'job_title', 'cv_file', 'cover_letter',
-            'status', 'employer_comment', 'created_date', 'candidate'
+            'status', 'employer_comment', 'created_date', 'candidate', 'company_name', 'job_location'
         ]
         read_only_fields = ['status', 'employer_comment', 'created_date']
 

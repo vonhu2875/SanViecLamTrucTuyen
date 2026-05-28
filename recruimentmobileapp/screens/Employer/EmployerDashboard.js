@@ -1,7 +1,7 @@
 // screens/Employer/EmployerDashboard.js
 import React, { useState, useEffect, useContext } from 'react';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
-import { Card, Text, ActivityIndicator, Avatar, Button, Chip } from 'react-native-paper';
+import { View, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { Card, Text, ActivityIndicator, Avatar, Button, Chip, Icon, IconButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect} from '@react-navigation/native';
 import Apis,{ authApis, endpoints } from '../../configs/Apis';
@@ -15,6 +15,7 @@ const EmployerDashboard = () => {
     const [stats, setStats] = useState(null);
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [deletingJobId, setDeletingJobId] = useState(null);
 
     // Đoạn code mới tự động re-fetch dữ liệu khi màn hình được Focus (hiển thị lại)
     useFocusEffect(
@@ -46,6 +47,9 @@ const EmployerDashboard = () => {
         const found = stats.applications_by_status.find(s => s.status === statusName);
         return found ? found.count : 0;
     };
+    const getReviewedCount = () => {
+        return stats?.reviewed_by_comment || 0;
+    };
 
     if (loading) {
         return (
@@ -62,6 +66,36 @@ const EmployerDashboard = () => {
         } catch (error) {
             console.error("Lỗi lấy chi tiết công việc:", error);
         }
+    };
+
+    const deleteJob = async (jobId) => {
+        setDeletingJobId(jobId);
+        try {
+            const token = await AsyncStorage.getItem('token');
+            await authApis(token).delete(`${endpoints['jobs']}${jobId}/`);
+            setJobs(prev => prev.filter(job => job.id !== jobId));
+            Alert.alert('Thành công', 'Đã xóa tin tuyển dụng.');
+        } catch (error) {
+            console.error("Lỗi xóa tin tuyển dụng:", error);
+            Alert.alert('Lỗi', 'Không thể xóa tin tuyển dụng. Vui lòng thử lại.');
+        } finally {
+            setDeletingJobId(null);
+        }
+    };
+
+    const handleDeletePress = (jobId, jobTitle) => {
+        Alert.alert(
+            'Xóa tin tuyển dụng',
+            `Bạn có chắc muốn xóa "${jobTitle}"? Hành động này không thể hoàn tác.`,
+            [
+                { text: 'Hủy', style: 'cancel' },
+                {
+                    text: 'Xóa',
+                    style: 'destructive',
+                    onPress: () => deleteJob(jobId),
+                },
+            ]
+        );
     };
 
     return (
@@ -130,9 +164,9 @@ const EmployerDashboard = () => {
                         <View style={[Styles.dashBreakdownDivider, { backgroundColor: COLORS.border }]} />
                         <View style={Styles.dashBreakdownItem}>
                             <Text style={[Styles.dashBreakdownNumber, { color: '#3B82F6' }]}>
-                                {getStatusCount('reviewed')}
+                                {getReviewedCount()}
                             </Text>
-                            <Text style={[Styles.dashBreakdownLabel, { color: COLORS.textLight }]}>Đang xem xét</Text>
+                            <Text style={[Styles.dashBreakdownLabel, { color: COLORS.textLight }]}>Đã đánh giá</Text>
                         </View>
                         <View style={[Styles.dashBreakdownDivider, { backgroundColor: COLORS.border }]} />
                         <View style={Styles.dashBreakdownItem}>
@@ -177,12 +211,18 @@ const EmployerDashboard = () => {
                                     <Text style={[Styles.dashJobTitle, { color: COLORS.textDarker }]} numberOfLines={2}>
                                         {job.title}
                                     </Text>
-                                    <Text style={[Styles.dashJobMeta, { color: COLORS.textLight }]}>
-                                        📍 {job.location}
-                                    </Text>
-                                    <Text style={[Styles.dashJobSalary, { color: COLORS.textLight }]}>
-                                        💰 {Number(job.salary_min).toLocaleString('vi-VN')} – {Number(job.salary_max).toLocaleString('vi-VN')} đ
-                                    </Text>
+                                    <View style={Styles.dashJobMetaContainer}>
+                                        <Icon source="map-marker-outline" size={14} color={COLORS.textLight} />
+                                        <Text style={[Styles.dashJobMeta, { color: COLORS.textLight }]}>
+                                            {job.location}
+                                        </Text>
+                                    </View>
+                                    <View style={Styles.dashJobMetaContainer}>
+                                        <Icon source="cash" size={14} color={COLORS.textLight} />
+                                        <Text style={[Styles.dashJobSalary, { color: COLORS.textLight }]}>
+                                            {Number(job.salary_min).toLocaleString('vi-VN')} – {Number(job.salary_max).toLocaleString('vi-VN')} đ
+                                        </Text>
+                                    </View>
                                     <Text style={[Styles.dashJobDeadline, { color: COLORS.textMuted }]}>
                                         Hạn nộp: {new Date(job.deadline).toLocaleDateString('vi-VN')}
                                     </Text>
@@ -196,29 +236,41 @@ const EmployerDashboard = () => {
                             </View>
                         </Card.Content>
 
-                        <Card.Actions style={{ paddingTop: 0 }}>
-                            <Button
-                                mode="text"
-                                textColor={COLORS.primary}
+                        <Card.Actions style={localStyles.actionRow}>
+                            <IconButton
                                 icon="account-group-outline"
-                                compact
+                                mode="contained-tonal"
+                                containerColor={COLORS.primaryLight}
+                                iconColor={COLORS.primary}
+                                size={22}
+                                style={localStyles.actionIconBtn}
+                                accessibilityLabel="Xem ứng viên"
                                 onPress={() => navigation.navigate('StackApplicantList', {
                                     jobId: job.id,
                                     jobTitle: job.title
                                 })}
-                            >
-                                Xem ứng viên
-                            </Button>
-                            <Button
-                                mode="text"
-                                textColor={COLORS.textLight}
+                            />
+                            <IconButton
                                 icon="pencil-outline"
-                                compact
-                                
+                                mode="contained-tonal"
+                                containerColor="#F3F4F6"
+                                iconColor={COLORS.textLight}
+                                size={22}
+                                style={localStyles.actionIconBtn}
+                                accessibilityLabel="Chỉnh sửa"
                                 onPress={() => {handleEditPress(job.id)}}
-                            >
-                                Chỉnh sửa
-                            </Button>
+                            />
+                            <IconButton
+                                icon="delete-outline"
+                                mode="contained-tonal"
+                                containerColor="#FEE2E2"
+                                iconColor="#EF4444"
+                                size={22}
+                                style={localStyles.actionIconBtn}
+                                accessibilityLabel="Xóa tin tuyển dụng"
+                                disabled={deletingJobId === job.id}
+                                onPress={() => handleDeletePress(job.id, job.title)}
+                            />
                         </Card.Actions>
                     </Card>
                 ))
@@ -226,5 +278,20 @@ const EmployerDashboard = () => {
         </ScrollView>
     );
 };
+
+const localStyles = StyleSheet.create({
+    actionRow: {
+        paddingTop: 0,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: 4,
+    },
+    actionIconBtn: {
+        margin: 0,
+        borderRadius: 999,
+        borderWidth: 0,
+        elevation: 0,
+    },
+});
 
 export default EmployerDashboard;

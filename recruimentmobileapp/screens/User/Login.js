@@ -6,9 +6,6 @@ import API, { authApis, endpoints } from '../../configs/Apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Styles from '../../styles/Styles';
 import { SafeAreaView } from 'react-native';
-import * as WebBrowser from 'expo-web-browser'; 
-import * as AuthSession from 'expo-auth-session';
-import * as Google from 'expo-auth-session/providers/google';
 
 WebBrowser.maybeCompleteAuthSession();
 
