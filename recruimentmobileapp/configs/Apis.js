@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const HOST = "http://192.168.2.21:8000"
+const HOST = "http://192.168.88.16:8000"
 export const endpoints = {
     'register': '/users/',
     'login': '/o/token/',
@@ -13,6 +13,8 @@ export const endpoints = {
     'jobs': '/jobs/',
     'apply-job': '/applications/',
     'save-job': (jobId) => `/jobs/${jobId}/save/`,
+    'delete-job': (jobId) => `/jobs/${jobId}/`,
+    'compare-jobs': '/jobs/compare/',
     'company-details': (id) => `/companies/${id}/`, 
     'approve-company': (id) => `/companies/${id}/approve/`,
     'employer-jobs': '/jobs/', 

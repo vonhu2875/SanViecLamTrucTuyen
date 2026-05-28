@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert, SafeAreaView, TouchableOpacity, Image } from 'react-native';
 import { Avatar, Button, Card, Text, List, IconButton, TextInput } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import MyUserContext from '../../configs/Contexts'; // Import đúng Context của thầy
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Styles from '../../styles/Styles';
@@ -16,10 +17,32 @@ const Profile = ({ navigation }) => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [avatar, setAvatar] = useState(null);
 
     const [companyInfo, setCompanyInfo] = useState(null);
     const [company, setCompany] = useState(false);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const refreshCurrentUser = async () => {
+                try {
+                    const token = await AsyncStorage.getItem('token');
+                    if (!token) return;
+                    const res = await Apis.get(endpoints['current-user'], {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res?.data) {
+                        dispatch({ type: 'LOGIN', payload: res.data });
+                    }
+                } catch (error) {
+                    console.error("Lỗi làm mới thông tin user:", error);
+                }
+            };
+
+            refreshCurrentUser();
+        }, [dispatch])
+    );
 
     useEffect(() => {
         const fetchCurrentCompany = async () => {
@@ -55,6 +78,7 @@ const Profile = ({ navigation }) => {
             setFirstName(user.first_name || '');
             setLastName(user.last_name || '');
             setEmail(user.email || '');
+            setPhone(user.phone || '');
             setAvatar(null);
         }
     }, [user]);
@@ -86,7 +110,8 @@ const Profile = ({ navigation }) => {
             const updateData = {
                 'first_name': firstName,
                 'last_name': lastName,
-                'email': email
+                'email': email,
+                'phone': phone
             };
             
             const form = new FormData();
@@ -176,6 +201,7 @@ const Profile = ({ navigation }) => {
         setFirstName(user?.first_name || '');
         setLastName(user?.last_name || '');
         setEmail(user?.email || '');
+        setPhone(user?.phone || '');
         setAvatar(null);
         setIsEditing(false);
     };
@@ -233,6 +259,7 @@ const Profile = ({ navigation }) => {
                                     <TextInput label="Họ và chữ lót" value={firstName} onChangeText={setFirstName} mode="outlined" activeOutlineColor="#F2A0B6" style={Styles.input} />
                                     <TextInput label="Tên" value={lastName} onChangeText={setLastName} mode="outlined" activeOutlineColor="#F2A0B6" style={Styles.input} />
                                     <TextInput label="Địa chỉ Email" value={email} onChangeText={setEmail} mode="outlined" activeOutlineColor="#F2A0B6" keyboardType="email-address" style={Styles.input} />
+                                    <TextInput label="Số điện thoại" value={phone} onChangeText={setPhone} mode="outlined" activeOutlineColor="#F2A0B6" keyboardType="phone-pad" style={Styles.input} />
 
                                     <View style={styles.buttonRow}>
                                         <Button mode="outlined" onPress={handleCancel} style={styles.rowButton} textColor="#666">Hủy</Button>
@@ -250,6 +277,11 @@ const Profile = ({ navigation }) => {
                                         title="Địa chỉ Email"
                                         description={user.email || "Chưa cập nhật"}
                                         left={props => <List.Icon {...props} icon="email" color="#F2A0B6" />}
+                                    />
+                                    <List.Item
+                                        title="Số điện thoại"
+                                        description={user.phone || "Chưa cập nhật"}
+                                        left={props => <List.Icon {...props} icon="phone" color="#F2A0B6" />}
                                     />
                                     {user.role === 'employer' && (
                                         <View style={{ marginTop: 10, borderTopWidth: 0.5, borderTopColor: '#eee', paddingTop: 10 }}>

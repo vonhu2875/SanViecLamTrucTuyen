@@ -4,7 +4,7 @@ from rest_framework import viewsets, generics, parsers, status, permissions, fil
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
-from recruitments.models import User, Company, Application, SavedJob, Job, Category, Skill
+from recruitments.models import User, Company, Application, SavedJob, Job, Category, Skill, Payment
 from recruitments import serializers
 from recruitments import perms, paginators
 from django.db.models import Count, Sum, Q
@@ -26,7 +26,8 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
         return Response(serializers.UserSerializer(u, context={'request':request}).data, status=status.HTTP_200_OK)
 
 #COMPANY
-class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.RetrieveAPIView, generics.UpdateAPIView):
+class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView,
+                     generics.UpdateAPIView):
     queryset = Company.objects.all()
     serializer_class = serializers.CompanySerializer
     parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
@@ -45,53 +46,78 @@ class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIV
     def get_serializer_class(self):
         if self.action in ['list']:
             return serializers.CompanySimpleSerializer
-        if self.action in ['update', 'partial_update']:
+        if self.action == 'approve':
             return serializers.CompanyAdminSerializer
         return serializers.CompanySerializer
 
     def get_permissions(self):
-        if self.request.method in ['POST']:
-            return [perms.IsEmployer()]
-        if self.action == 'current_company':
+        if self.action in ['create', 'current_company']:
             return [perms.IsEmployer()]
         if self.action in ['update', 'partial_update']:
+            return [permissions.IsAuthenticated(), perms.IsCompanyOwner()]
+        if self.action == 'approve':
+            # CHỈ Admin mới có quyền gọi hành động duyệt này
             return [permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
-    #Còn cần chỉnh lại
-    def perform_create(self, serializer):
-        if Company.objects.filter(user=self.request.user).exists():
-            raise ValidationError(
-                {"detail": "Tài khoản này đã có hồ sơ công ty."}
-            )
-        serializer.save(user=self.request.user, active=True)
-
-    #Sau khi cập nhật hiển thị lại chi tiết thông tin công ty
     def update(self, request, *args, **kwargs):
         company = self.get_object()
+        if 'is_approved' in request.data and not request.user.is_staff:
+            raise PermissionDenied("Bạn không có quyền thay đổi trạng thái phê duyệt.")
+
+        s = self.get_serializer(company, data=request.data, partial=True)
+        s.is_valid(raise_exception=True)
+        company = s.save()
+        return Response(serializers.CompanySerializer(company, context={'request': request}).data,
+                        status=status.HTTP_200_OK)
+
+    @action(methods=['patch'], detail=True, url_path='approve')
+    def approve(self, request, pk=None):
+        company = self.get_object()
+        # Sử dụng đúng CompanyAdminSerializer để chỉ cập nhật trạng thái duyệt
         s = serializers.CompanyAdminSerializer(company, data=request.data, partial=True)
         s.is_valid(raise_exception=True)
         company = s.save()
         return Response(serializers.CompanySerializer(company, context={'request': request}).data,
                         status=status.HTTP_200_OK)
+
     @action(methods=['patch', 'get'], detail=False, url_path='current-company')
     def current_company(self, request):
+        # Vì lúc đăng ký đã tạo sẵn, chắc chắn dòng này sẽ tìm thấy Công ty
         company = Company.objects.filter(user=request.user).first()
+
         if not company:
-            return Response({"detail": "Tài khoản của bạn chưa tạo hồ sơ công ty."},
-                            status=status.HTTP_400_BAD_REQUEST)
+
+            company = Company.objects.create(
+                user=request.user,
+                name=f"Công ty của {request.user.username}",
+                description="Chưa có mô tả",
+                address="Chưa cập nhật"
+            )
+
         if request.method == 'GET':
             return Response(serializers.CompanySerializer(company, context={'request': request}).data,
                             status=status.HTTP_200_OK)
-        s = serializers.CompanySimpleSerializer(company, data=request.data, partial=True)
+
+        if 'is_approved' in request.data and not request.user.is_staff:
+            raise PermissionDenied("Bạn không có quyền thay đổi trạng thái phê duyệt.")
+
+        s = serializers.CompanySerializer(company, data=request.data, partial=True)
         s.is_valid(raise_exception=True)
         company = s.save()
         return Response(serializers.CompanySerializer(company, context={'request': request}).data,
                         status=status.HTTP_200_OK)
 #JOBS
+
 class SkillViewSet(viewsets.ViewSet, generics.ListAPIView):
-    queryset = Skill.objects.filter(active=True)
     serializer_class = serializers.SkillSerializer
+
+    def get_queryset(self):
+        queryset = Skill.objects.filter(active=True)
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            queryset = queryset.filter(categories__id=category_id)
+        return queryset.distinct()
 
 class CategoryViewset(viewsets.ViewSet, generics.ListAPIView):
     queryset = Category.objects.filter(active=True)
@@ -152,12 +178,16 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
         if self.request.method in ['DELETE']:
             return [perms.IsJobOwner()]
         if self.action == 'update_job':
-            return [permissions.IsAuthenticated(), perms.IsEmployer(), perms.IsJobOwner()]
+            return [permissions.IsAuthenticated(), perms.IsEmployer(), perms.IsApprovedEmployer(), perms.IsJobOwner()]
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
         company = self.request.user.company
         serializer.save(employer=company)
+
+    def perform_destroy(self, instance):
+        instance.active = False
+        instance.save()
 
     @action(methods=['patch'], detail=True, url_path='update-job')
     def update_job(self, request, pk=None):
@@ -178,6 +208,64 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
         saved_job.save()
         return Response(
             serializers.JobDetailSerializer(self.get_object(), context={'request': request}).data,status=status.HTTP_200_OK)
+
+    @action(methods=['get'], detail=False, url_path='compare', permission_classes=[permissions.AllowAny])
+    def compare_jobs(self, request):
+        ids_param = request.query_params.get('ids')
+        if not ids_param:
+            return Response({"detail": "Vui lòng truyền danh sách id công việc cần so sánh (?ids=1,2)."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            job_ids = [int(x) for x in ids_param.split(',')]
+            if len(job_ids) < 2:
+                return Response({"detail": "Cần ít nhất 2 công việc để so sánh."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if len(job_ids) > 4:
+                return Response({"detail": "Chỉ được so sánh tối đa 4 công việc."},
+                                status=status.HTTP_400_BAD_REQUEST)
+        except ValueError:
+            return Response({"detail": "Định dạng ids không hợp lệ."}, status=status.HTTP_400_BAD_REQUEST)
+
+        jobs = Job.objects.filter(id__in=job_ids, active=True, employer__is_approved=True).select_related(
+            'employer', 'category'
+        ).prefetch_related('skills')
+
+        if not jobs.exists():
+            return Response({"detail": "Không tìm thấy công việc hợp lệ."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Dữ liệu chi tiết từng job
+        jobs_data = serializers.JobDetailSerializer(jobs, many=True, context={'request': request}).data
+
+        # --- Thống kê tổng hợp để vẽ chart ---
+        salary_chart = []
+        from datetime import date
+        today = date.today()
+
+        for job in jobs:
+            benefits_score = job.skills.count()
+            days_left = (job.deadline - today).days if job.deadline >= today else 0
+            salary_min = float(job.salary_min or 0)
+            salary_max = float(job.salary_max or 0)
+
+            salary_chart.append({
+                "job_id": job.id,
+                "job_title": job.title,
+                "salary_min": salary_min,
+                "salary_max": salary_max,
+                "salary_avg": (salary_min + salary_max) / 2,
+                "experience_years": job.experience_required or 0,
+                "benefits_score": benefits_score,
+                "days_until_deadline": max(days_left, 0),
+                "location": job.location,
+                "category": job.category.name if job.category else '',
+            })
+
+        return Response({
+            "jobs": jobs_data,
+            "comparison_stats": salary_chart,
+        }, status=status.HTTP_200_OK)
+
 
 class ApplicationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Application.objects.filter(active=True)
@@ -202,8 +290,8 @@ class ApplicationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Create
             job_id = self.request.query_params.get('job_id')
             if job_id:
                 return queryset.filter(job_id=job_id)
-
             return queryset
+        return Application.objects.none()
 
     def get_permissions(self):
         if self.request.method == 'POST':
@@ -217,11 +305,21 @@ class ApplicationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Create
     def perform_create(self, serializer):
         job_id = self.request.data.get('job')
         user = self.request.user
+        job = Job.objects.get(id=job_id, active=True)
+        if job.deadline < datetime.now().date():
+            raise ValidationError({
+                "detail": "Công việc đã hết hạn ứng tuyển"
+            })
 
+        if not job.employer.is_approved:
+            raise ValidationError({
+                "detail": "Công ty chưa được phê duyệt"
+            })
         if Application.objects.filter(candidate=user, job_id=job_id, active=True).exists():
             raise ValidationError(
                 {"detail": "Bạn đã nộp hồ sơ ứng tuyển cho công việc này rồi. Không thể nộp lại!"}
             )
+
         serializer.save(candidate=user)
 
     # PATCH /api/applications/{id}/review/ — Employer đánh giá hồ sơ
@@ -251,6 +349,11 @@ class StatsViewSet(viewsets.ViewSet):
         status_stats = Application.objects.filter(job__employer=company, active=True) \
             .values('status') \
             .annotate(count=Count('id'))
+        reviewed_by_comment = Application.objects.filter(
+            job__employer=company,
+            active=True,
+            employer_comment__isnull=False
+        ).exclude(employer_comment__exact='').count()
 
         # Thống kê số lượng đơn ứng tuyển nộp vào theo từng Tháng trong Năm nay
         # Lấy năm hiện tại
@@ -270,6 +373,7 @@ class StatsViewSet(viewsets.ViewSet):
             "company_name": company.name,
             "total_applications": total_applications,
             "applications_by_status": list(status_stats),
+            "reviewed_by_comment": reviewed_by_comment,
             "monthly_applications": list(monthly_applications)
         }
         return Response(data, status=status.HTTP_200_OK)
@@ -293,7 +397,12 @@ class StatsViewSet(viewsets.ViewSet):
         #Giả sử sau này làm bảng Transaction, đoạn này sẽ tính tổng tiền:
         #total_revenue = Transaction.objects.filter(status='success').aggregate(Sum('amount'))['amount__sum'] or 0
         # Hiện tại chưa làm bảng Payment thì mình cứ gán cứng con số 0 hoặc mock data để vượt qua kiểm tra:
-        total_revenue = 15500000  # Mock data: 15.500.000 VNĐ
+        total_revenue = Payment.objects.filter(
+            status='success',
+            active=True
+        ).aggregate(
+            total=Sum('amount')
+        )['total'] or 0
 
         data = {
             "system_overview": {
@@ -307,3 +416,23 @@ class StatsViewSet(viewsets.ViewSet):
         return Response(data, status=status.HTTP_200_OK)
 
 
+
+class PaymentViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
+    queryset = Payment.objects.filter(active=True)
+    serializer_class = serializers.PaymentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff or user.role == 'admin':
+            return Payment.objects.filter(active=True)
+        # Người dùng chỉ thấy lịch sử thanh toán hóa đơn của chính mình
+        return Payment.objects.filter(user=user, active=True)
+
+    def perform_create(self, serializer):
+        # Mặc định hóa đơn tạo ra ở trạng thái 'success' (Hoặc 'pending' tùy luồng tích hợp của bạn)
+        # Gắn user hiện tại vào hóa đơn thanh toán công việc
+        serializer.save(
+            user=self.request.user,
+            status='pending'
+        )

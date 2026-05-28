@@ -1,22 +1,21 @@
-// screens/Employer/ApplicationList.js
-import React, { useState, useEffect } from 'react';
-import { View, FlatList, Alert, RefreshControl } from 'react-native';
-import { Card, Text, Avatar, Button, Chip, ActivityIndicator, Searchbar } from 'react-native-paper';
+// screens/Employer/ApplicantList.js
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, FlatList, TouchableOpacity, RefreshControl, StyleSheet, ScrollView } from 'react-native';
+import { Text, Avatar, ActivityIndicator, Searchbar, Icon } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Linking } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { authApis, endpoints } from '../../configs/Apis';
 import { COLORS } from '../../constants/Colors';
-import Styles from '../../styles/Styles';
+
 
 const STATUS_CONFIG = {
-    pending:  { label: 'Chờ xem xét', color: '#F59E0B', bg: '#FEF3C7', icon: 'clock-outline' },
-    reviewed: { label: 'Đang xem xét', color: '#3B82F6', bg: '#EFF6FF', icon: 'eye-outline' },
-    accepted: { label: 'Đã duyệt',     color: '#10B981', bg: '#E8F5E9', icon: 'check-circle-outline' },
-    rejected: { label: 'Từ chối',      color: '#EF4444', bg: '#FFEBEE', icon: 'close-circle-outline' },
+    pending:  { label: 'Chờ xem xét',  color: '#F59E0B', bg: '#FEF3C7' },
+    reviewed: { label: 'Đã đánh giá',  color: '#3B82F6', bg: '#EFF6FF' },
+    accepted: { label: 'Đã duyệt',     color: '#10B981', bg: '#E8F5E9' },
+    rejected: { label: 'Từ chối',      color: '#EF4444', bg: '#FFEBEE' },
 };
 
-const ApplicationList = () => {
+const ApplicantList = () => {
     const route = useRoute();
     const navigation = useNavigation();
     const { jobId, jobTitle } = route.params || {};
@@ -27,288 +26,189 @@ const ApplicationList = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('all');
+
     useEffect(() => {
-        navigation.setOptions({
-            title: jobId && jobTitle ? `${jobTitle}` : 'Tất cả ứng viên'
-        });
-    }, [jobId, jobTitle]);
+        navigation.setOptions({ title: jobTitle || 'Tất cả ứng viên' });
+    }, [jobTitle]);
 
     const fetchApplications = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
         else setLoading(true);
         try {
             const token = await AsyncStorage.getItem('token');
-            const res = await authApis(token).get(endpoints['applications']);
+            const url = jobId
+                ? `${endpoints['applications']}?job_id=${jobId}`
+                : endpoints['applications'];
+            const res = await authApis(token).get(url);
             const data = res.data.results || res.data;
-            
-            // LỌC AN TOÀN: Nếu màn hình trước truyền sang jobId cụ thể thì lọc theo Job, 
-            // nếu không có jobId (xem toàn bộ ứng viên công ty) thì lấy hết data từ API trả về.
-            const matchedApplications = jobId 
-                ? data.filter(item => String(item.job) === String(jobId))
-                : data;
-
-            setApps(matchedApplications);
-            setFiltered(matchedApplications);
+            setApps(data);
+            setFiltered(data);
         } catch (error) {
-            console.error("Lỗi lấy danh sách ứng viên:", error);
-            Alert.alert("Lỗi", "Không thể lấy dữ liệu danh sách ứng tuyển.");
+            console.error("Lỗi:", error);
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
     };
 
-    useEffect(() => {
-        fetchApplications();
-    }, [jobId]);
+    useEffect(() => { fetchApplications(); }, [jobId]);
 
-    // Bộ lọc Status + Tìm kiếm chuỗi văn bản
+    const hasEmployerComment = (application) => {
+        return !!(application?.employer_comment && application.employer_comment.trim());
+    };
+
     useEffect(() => {
         let result = [...apps];
-        if (activeFilter !== 'all') {
+        if (activeFilter === 'reviewed') {
+            result = result.filter(a => hasEmployerComment(a));
+        } else if (activeFilter !== 'all') {
             result = result.filter(a => a.status === activeFilter);
         }
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
             result = result.filter(a => {
                 const fullName = `${a.candidate?.last_name || ''} ${a.candidate?.first_name || ''}`.toLowerCase();
-                return (
-                    fullName.includes(q) ||
-                    a.candidate?.username?.toLowerCase().includes(q) ||
-                    a.candidate?.email?.toLowerCase().includes(q) ||
-                    a.job_title?.toLowerCase().includes(q)
-                );
+                const username = a.candidate?.username?.toLowerCase() || '';
+                const email = a.candidate?.email?.toLowerCase() || '';
+                return fullName.includes(q) || username.includes(q) || email.includes(q);
             });
         }
         setFiltered(result);
     }, [activeFilter, searchQuery, apps]);
 
-    const handleReview = async (id, candidateName, newStatus) => {
-        const cfg = STATUS_CONFIG[newStatus];
-        Alert.alert(
-            `Xác nhận: ${cfg.label}`,
-            `Cập nhật trạng thái hồ sơ của ${candidateName}?`,
-            [
-                { text: 'Huỷ', style: 'cancel' },
-                {
-                    text: 'Đồng ý',
-                    onPress: async () => {
-                        try {
-                            const token = await AsyncStorage.getItem('token');
-                            // Gọi đến endpoint PATCH /api/applications/{id}/review/
-                            await authApis(token).patch(
-                                `${endpoints['applications']}${id}/review/`,
-                                { status: newStatus, employer_comment: `Đã cập nhật: ${cfg.label}` }
-                            );
-                            setApps(prev => prev.map(a =>
-                                a.id === id ? { ...a, status: newStatus } : a
-                            ));
-                            Alert.alert('Thành công', `Đã cập nhật: ${cfg.label}`);
-                        } catch (error) {
-                            console.error(error);
-                            Alert.alert('Lỗi', 'Không thể cập nhật trạng thái.');
-                        }
-                    }
-                }
-            ]
-        );
+    const statusCounts = useMemo(() => {
+        return apps.reduce((acc, app) => {
+            if (acc[app.status] !== undefined) acc[app.status] += 1;
+            if (hasEmployerComment(app)) acc.reviewed += 1;
+            return acc;
+        }, { pending: 0, reviewed: 0, accepted: 0, rejected: 0 });
+    }, [apps]);
+
+    const handleStatusUpdate = (updatedApplication) => {
+        setApps(prev => prev.map(a => a.id === updatedApplication.id ? { ...a, ...updatedApplication } : a));
     };
 
     const renderItem = ({ item }) => {
         const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.pending;
-
-        // Xử lý chuỗi hiển thị tên ứng viên rõ ràng
-        const candidateDisplayName = (item.candidate?.first_name || item.candidate?.last_name)
+        const candidateName = (item.candidate?.first_name || item.candidate?.last_name)
             ? `${item.candidate.last_name || ''} ${item.candidate.first_name || ''}`.trim()
             : item.candidate?.username || 'Ứng viên ẩn danh';
 
         return (
-            <Card style={[Styles.appCard, { backgroundColor: COLORS.cardBg, marginBottom: 12 }]} elevation={2}>
-                <Card.Content>
-                    {/* HEADER: Avatar + Tên + Vị trí */}
-                    <View style={Styles.appCardHeaderRow}>
-                        {item.candidate?.avatar ? (
-                            <Avatar.Image
-                                size={46}
-                                source={{ uri: item.candidate.avatar }}
-                                style={Styles.appCardAvatar}
-                            />
-                        ) : (
-                            <Avatar.Text
-                                size={46}
-                                label={candidateDisplayName.substring(0, 2).toUpperCase()}
-                                style={[Styles.appCardAvatar, { backgroundColor: COLORS.primaryLight }]}
-                                color={COLORS.primary}
-                            />
-                        )}
-                        
-                        <View style={Styles.appCardInfo}>
-                            <Text style={[Styles.appCardName, { color: COLORS.textDarker, fontWeight: 'bold', fontSize: 16 }]}>
-                                {candidateDisplayName}
-                            </Text>
-                            <Text style={[Styles.appCardEmail, { color: COLORS.textLight }]} numberOfLines={1}>
-                                {item.candidate?.email || 'Chưa cập nhật email'}
-                            </Text>
-                            <Text style={[Styles.appCardJobTitle, { color: COLORS.textLight, marginTop: 2 }]} numberOfLines={1}>
-                                💼 {item.job_title || jobTitle || `Mã công việc: #${item.job}`}
+            <TouchableOpacity
+                style={styles.card}
+                activeOpacity={0.75}
+                onPress={() => navigation.navigate('ApplicationDetail', {
+                    application: item,
+                    jobTitle,
+                    onStatusUpdate: handleStatusUpdate,
+                })}
+            >
+                {/* Avatar + Info */}
+                <View style={styles.cardHeader}>
+                    {item.candidate?.avatar ? (
+                        <Avatar.Image size={46} source={{ uri: item.candidate.avatar }} />
+                    ) : (
+                        <Avatar.Text
+                            size={46}
+                            label={candidateName.substring(0, 2).toUpperCase()}
+                            style={{ backgroundColor: COLORS.primaryLight || '#FCE4EC' }}
+                            color={COLORS.primary}
+                        />
+                    )}
+                    <View style={styles.cardInfo}>
+                        <Text style={styles.cardName}>{candidateName}</Text>
+                        <Text style={styles.cardEmail} numberOfLines={1}>
+                            {item.candidate?.email || 'Chưa cập nhật email'}</Text>
+                        <View style={styles.cardJobContainer}>
+                            <Icon source="briefcase" size={14} color="#6B7280" />
+                            <Text style={styles.cardJob} numberOfLines={1}>
+                                {item.job_title || jobTitle || `Công việc #${item.job}`}
                             </Text>
                         </View>
                     </View>
+                </View>
 
-                    {/* STATUS + NGÀY NỘP */}
-                    <View style={Styles.appCardStatusRow}>
-                        <Chip
-                            icon={cfg.icon}
-                            style={{ backgroundColor: cfg.bg }}
-                            textStyle={{ color: cfg.color, fontSize: 11 }}
-                        >
+                {/* Status chip + Ngày — cùng 1 hàng, căn đều */}
+                <View style={styles.cardMeta}>
+                    <View style={[styles.statusPill, { backgroundColor: cfg.bg }]}>
+                        <Text style={[styles.statusPillText, { color: cfg.color }]}>
                             {cfg.label}
-                        </Chip>
-                        <Text style={[Styles.appCardDate, { color: COLORS.textMuted }]}>
-                            {item.created_date ? new Date(item.created_date).toLocaleDateString('vi-VN') : ''}
                         </Text>
                     </View>
+                    <Text style={styles.cardDate}>
+                        {item.created_date
+                            ? new Date(item.created_date).toLocaleDateString('vi-VN')
+                            : ''}
+                    </Text>
+                </View>
 
-                    {/* THƯ GIỚI THIỆU */}
-                    {item.cover_letter ? (
-                        <Text
-                            style={[Styles.appCardCoverLetter, { color: COLORS.textLight, fontStyle: 'italic', marginVertical: 8 }]}
-                            numberOfLines={3}
-                        >
-                            "{item.cover_letter}"
-                        </Text>
-                    ) : null}
-
-                    {/* ACTIONS BUTTONS */}
-                    <View style={Styles.appCardActions}>
-                        <Button
-                            mode="outlined"
-                            icon="file-document-outline"
-                            textColor={COLORS.primary}
-                            style={{ borderColor: COLORS.primary }}
-                            compact
-                            onPress={() => {
-                                if (item.cv_file) Linking.openURL(item.cv_file);
-                                else Alert.alert('Thông báo', 'Ứng viên chưa đính kèm CV.');
-                            }}
-                        >
-                            Xem CV
-                        </Button>
-
-                        {(item.status === 'pending' || item.status === 'reviewed') && (
-                            <View style={Styles.appCardActionBtns}>
-                                <Button
-                                    mode="outlined"
-                                    textColor="#EF4444"
-                                    style={{ borderColor: '#EF4444', marginRight: 6 }}
-                                    compact
-                                    onPress={() => handleReview(item.id, candidateDisplayName, 'rejected')}
-                                >
-                                    Từ chối
-                                </Button>
-                                <Button
-                                    mode="contained"
-                                    buttonColor="#10B981"
-                                    compact
-                                    onPress={() => handleReview(item.id, candidateDisplayName, 'accepted')}
-                                >
-                                    Duyệt
-                                </Button>
-                            </View>
-                        )}
-
-                        {(item.status === 'accepted' || item.status === 'rejected') && (
-                            <Button
-                                mode="text"
-                                textColor={COLORS.textLight}
-                                compact
-                                onPress={() => handleReview(item.id, candidateDisplayName, 'pending')}
-                            >
-                                Đặt lại
-                            </Button>
-                        )}
-                    </View>
-                </Card.Content>
-            </Card>
+                {/* Cover letter */}
+                {item.cover_letter ? (
+                    <Text style={styles.cardCover} numberOfLines={2}>
+                        "{item.cover_letter}"
+                    </Text>
+                ) : null}
+            </TouchableOpacity>
         );
     };
 
     if (loading) {
-        return (
-            <View style={[Styles.appListEmpty, { flex: 1, justifyContent: 'center', backgroundColor: COLORS.background }]}>
-                <ActivityIndicator size="large" color={COLORS.primary} />
-            </View>
-        );
+        return <View style={styles.centered}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
     }
 
     return (
-        <View style={[Styles.appListRoot, { backgroundColor: COLORS.background, flex: 1 }]}>
-            {/* HEADER */}
-            <View style={Styles.appListHeader}>
-                <Text style={[Styles.appListTitle, { color: COLORS.textDarker, fontWeight: 'bold', marginBottom: 8, fontSize: 18 }]} numberOfLines={2}>
-                    {jobTitle || 'Tất cả ứng viên ứng tuyển'}
-                </Text>
+        <View style={styles.root}>
+            <Searchbar
+                placeholder="Tìm theo tên hoặc email..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                style={styles.searchbar}
+                iconColor={COLORS.primary}
+            />
 
-                {/* SEARCH */}
-                <Searchbar
-                    placeholder="Tìm theo tên, email hoặc vị trí..."
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    style={[Styles.appListSearchbar, { backgroundColor: COLORS.cardBg, marginBottom: 10 }]}
-                    iconColor={COLORS.primary}
-                />
-
-                {/* FILTER CHIPS */}
-                <View style={Styles.appListChipRow}>
+            <View style={{ marginBottom: 10 }}>
+                <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.categoryContainer}
+                >
                     {[
                         { key: 'all',      label: `Tất cả (${apps.length})` },
-                        { key: 'pending',  label: `Chờ (${apps.filter(a => a.status === 'pending').length})` },
-                        { key: 'accepted', label: `Duyệt (${apps.filter(a => a.status === 'accepted').length})` },
-                        { key: 'rejected', label: `Từ chối (${apps.filter(a => a.status === 'rejected').length})` },
+                        { key: 'pending',  label: `Chờ xem xét (${statusCounts.pending})` },
+                        { key: 'reviewed', label: `Đã đánh giá (${statusCounts.reviewed})` },
+                        { key: 'accepted', label: `Đã duyệt (${statusCounts.accepted})` },
+                        { key: 'rejected', label: `Từ chối (${statusCounts.rejected})` },
                     ].map(f => (
-                        <Chip
+                        <TouchableOpacity
                             key={f.key}
-                            selected={activeFilter === f.key}
+                            style={[styles.categoryTab, activeFilter === f.key && styles.activeCategoryTab]}
                             onPress={() => setActiveFilter(f.key)}
-                            style={{
-                                backgroundColor: activeFilter === f.key ? COLORS.primary : COLORS.cardBg,
-                                marginRight: 5
-                            }}
-                            textStyle={{
-                                color: activeFilter === f.key ? COLORS.white : COLORS.textLight,
-                                fontSize: 11,
-                            }}
                         >
-                            {f.label}
-                        </Chip>
+                            <Text style={[styles.categoryTabText, activeFilter === f.key && styles.activeCategoryTabText]}>
+                                {f.label}
+                            </Text>
+                        </TouchableOpacity>
                     ))}
-                </View>
+                </ScrollView>
             </View>
 
-            {/* LIST */}
             <FlatList
                 data={filtered}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={item => item.id.toString()}
                 renderItem={renderItem}
-                contentContainerStyle={[Styles.appListFlatList, { backgroundColor: COLORS.background, paddingHorizontal: 10 }]}
+                contentContainerStyle={{ padding: 12, paddingBottom: 32 }}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={() => fetchApplications(true)}
-                        colors={[COLORS.primary]}
-                    />
+                    <RefreshControl refreshing={refreshing} onRefresh={() => fetchApplications(true)} colors={[COLORS.primary]} />
                 }
                 ListEmptyComponent={
-                    <View style={[Styles.appListEmpty, { alignItems: 'center', marginTop: 40 }]}>
-                        <Avatar.Icon
-                            size={60} icon="account-off-outline"
-                            style={{ backgroundColor: COLORS.primaryLight }}
+                    <View style={styles.empty}>
+                        <Avatar.Icon size={56} icon="account-off-outline"
+                            style={{ backgroundColor: COLORS.primaryLight || '#FCE4EC' }}
                             color={COLORS.primary}
                         />
-                        <Text style={[Styles.appListEmptyText, { color: COLORS.textLight, marginTop: 10, textAlign: 'center' }]}>
-                            Không tìm thấy hồ sơ ứng tuyển nào
-                        </Text>
+                        <Text style={styles.emptyText}>Không tìm thấy hồ sơ nào</Text>
                     </View>
                 }
             />
@@ -316,4 +216,78 @@ const ApplicationList = () => {
     );
 };
 
-export default ApplicationList;
+const styles = StyleSheet.create({
+    root: { flex: 1, backgroundColor: '#F9FAFB' },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    searchbar: { margin: 12, marginBottom: 8, backgroundColor: '#fff', elevation: 1, borderRadius: 10 },
+
+    // Filter chips — dùng TouchableOpacity thay Chip để kiểm soát size tốt hơn
+    categoryContainer: {
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+        alignItems: 'center',
+    },
+    categoryTab: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        elevation: 1,
+    },
+    activeCategoryTab: {
+        backgroundColor: COLORS.primaryLight || '#FFEBF0', // Nền hồng nhạt
+        borderColor: COLORS.primary, // Viền hồng đậm
+    },
+    categoryTabText: {
+        fontSize: 13,
+        color: '#666',
+        fontWeight: '500',
+    },
+    activeCategoryTabText: {
+        color: COLORS.primary, // Chữ hồng đậm
+        fontWeight: 'bold',
+    },
+
+    // Card
+    card: {
+        backgroundColor: '#fff', borderRadius: 12,
+        padding: 14, marginBottom: 10,
+        elevation: 2, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
+    },
+    cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+    cardInfo: { flex: 1, marginLeft: 12 },
+    cardName: { fontSize: 15, fontWeight: '700', color: '#111827' },
+    cardEmail: { fontSize: 12, color: '#6B7280', marginTop: 1 },
+    cardJobContainer: {
+    flexDirection: 'row',  // 🌟 BẮT BUỘC: Ép icon và chữ phải nằm trên cùng một hàng ngang
+    alignItems: 'center',  // Giúp icon và chữ căn giữa đều nhau, không bị lệch lên lệch xuống
+    gap: 6,                // Tạo khoảng cách trống vừa phải giữa icon và chữ
+    marginTop: 4,          // Khoảng cách với dòng phía trên nó
+    },
+    cardJob: {
+        fontSize: 12,
+        color: '#6B7280',
+        flex: 1,               // 🌟 BẮT BUỘC: Đoạn này giúp chữ tự động co giãn, nếu dài quá sẽ hiện "..." chứ không đẩy hàng
+    },
+
+    // Status + date — hàng riêng, không dùng Chip (tránh bị lệch height)
+    cardMeta: {
+        flexDirection: 'row', alignItems: 'center',
+        justifyContent: 'space-between', marginBottom: 4,
+    },
+    statusPill: {
+        paddingHorizontal: 10, paddingVertical: 4,
+        borderRadius: 20, alignSelf: 'flex-start',
+    },
+    statusPillText: { fontSize: 12, fontWeight: '600' },
+    cardDate: { fontSize: 12, color: '#9CA3AF' },
+    cardCover: { fontSize: 12, color: '#9CA3AF', fontStyle: 'italic', marginTop: 6, lineHeight: 17 },
+
+    empty: { alignItems: 'center', marginTop: 60, gap: 12 },
+    emptyText: { color: '#9CA3AF', fontSize: 14 },
+});
+
+export default ApplicantList;

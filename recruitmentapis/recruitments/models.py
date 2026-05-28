@@ -2,6 +2,8 @@ from ckeditor.fields import RichTextField
 from cloudinary.models import CloudinaryField
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db.models.fields import EmailField
+
 
 # Base Model
 class BaseModel(models.Model):
@@ -21,7 +23,9 @@ class User(AbstractUser):
     ]
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='candidate')
+    phone = models.CharField(max_length=15, null=True, blank=True)
     avatar = CloudinaryField('avatar')
+    email = EmailField(unique=True)
 
     def __str__(self):
         return self.username
@@ -48,6 +52,8 @@ class Category(BaseModel):
 # Kỹ năng mỗi job (Để dễ mở rộng tìm kiếm job theo kỹ năng)
 class Skill(BaseModel):
     name = models.CharField(max_length=100, unique=True)
+    categories = models.ManyToManyField(Category, related_name='skills', blank=True)
+
     def __str__(self):
         return self.name
 

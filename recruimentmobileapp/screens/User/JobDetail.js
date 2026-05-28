@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, ScrollView, StyleSheet, Alert, SafeAreaView, useWindowDimensions } from 'react-native';
-import { Text, Card, Avatar, Button, IconButton, Chip, ActivityIndicator } from 'react-native-paper';
+import { View, ScrollView, StyleSheet, Alert, SafeAreaView, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { Text, Card, Avatar, Button, IconButton, Chip, ActivityIndicator, Divider, List } from 'react-native-paper';
 import RenderHtml from 'react-native-render-html'; // Để hiển thị mượt mà nội dung RichTextField từ Django
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Apis, { endpoints } from '../../configs/Apis';
@@ -12,6 +12,7 @@ const JobDetail = ({ route, navigation }) => {
     const [user] = useContext(MyUserContext); // Kiểm tra role người dùng
 
     const [job, setJob] = useState(null);
+    const [companyPreview, setCompanyPreview] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saved, setSaved] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -39,6 +40,22 @@ const JobDetail = ({ route, navigation }) => {
     useEffect(() => {
         fetchJobDetail();
     }, [jobId]);
+
+    useEffect(() => {
+        const companyId = job?.employer?.id || job?.company?.id || job?.employer_id;
+        if (!companyId) return;
+
+        const fetchCompanyPreview = async () => {
+            try {
+                const response = await Apis.get(endpoints['company-details'](companyId));
+                setCompanyPreview(response.data);
+            } catch (error) {
+                console.error("Lỗi lấy nhanh thông tin công ty:", error);
+            }
+        };
+
+        fetchCompanyPreview();
+    }, [job]);
 
     // 2. Logic Lưu / Hủy lưu công việc (Khớp với @action save_job ở backend)
     const handleSaveJob = async () => {
@@ -84,6 +101,16 @@ const JobDetail = ({ route, navigation }) => {
         );
     }
 
+    const companyId = job?.employer?.id || job?.company?.id || job?.employer_id;
+    const companyData = companyPreview || job?.employer || {};
+    const handleOpenCompanyDetail = () => {
+        if (!companyId) {
+            Alert.alert('Thông báo', 'Không tìm thấy thông tin công ty để xem chi tiết.');
+            return;
+        }
+        navigation.navigate('CompanyDetail', { companyId });
+    };
+
     return (
         <SafeAreaView style={Styles.safeArea}>
             <ScrollView contentContainerStyle={[Styles.container]}>
@@ -99,8 +126,10 @@ const JobDetail = ({ route, navigation }) => {
                         <Text style={styles.companyText}>{job.employer?.name}</Text>
                         
                         <View style={styles.rowInfo}>
-                            <Chip icon="map-marker" style={styles.chip} textStyle={styles.chipText}>{job.location}</Chip>
-                            <Chip icon="cash" style={styles.chip} textStyle={styles.chipText}>
+                            <Chip icon="map-marker" style={styles.chip} textStyle={styles.chipText} compact={false}>
+                                {job.location}
+                            </Chip>
+                            <Chip icon="cash" style={styles.chip} textStyle={styles.chipText} compact={false}>
                                 {parseFloat(job.salary_min).toLocaleString()} - {parseFloat(job.salary_max).toLocaleString()} VNĐ
                             </Chip>
                         </View>
@@ -123,7 +152,9 @@ const JobDetail = ({ route, navigation }) => {
                         <Card.Title title="Kỹ năng yêu cầu" titleStyle={styles.sectionTitle} />
                         <Card.Content style={styles.skillsContainer}>
                             {job.skills.map(skill => (
-                                <Chip key={skill.id} mode="outlined" style={styles.skillChip}>{skill.name}</Chip>
+                                <View key={skill.id} style={styles.skillPill}>
+                                    <Text style={styles.skillPillText}>{skill.name}</Text>
+                                </View>
                             ))}
                         </Card.Content>
                     </Card>
@@ -162,6 +193,50 @@ const JobDetail = ({ route, navigation }) => {
                     </Card.Content>
                 </Card>
 
+                {/* Khối thông tin công ty (bấm để xem chi tiết) */}
+                <TouchableOpacity activeOpacity={0.85} onPress={handleOpenCompanyDetail}>
+                    <Card style={styles.contentCard}>
+                        <Card.Title
+                            title="Thông tin công ty"
+                            titleStyle={styles.sectionTitle}
+                            right={(props) => <IconButton {...props} icon="chevron-right" iconColor="#9CA3AF" />}
+                        />
+                        <Divider />
+                        <Card.Content style={{ paddingTop: 8 }}>
+                            <List.Item
+                                title="Tên công ty"
+                                description={companyData?.name || 'Chưa cập nhật'}
+                                left={(props) => <List.Icon {...props} icon="office-building" color="#F2A0B6" />}
+                                titleStyle={styles.infoTitle}
+                            />
+                            <Divider style={styles.infoDivider} />
+                            <List.Item
+                                title="Địa chỉ"
+                                description={companyData?.address || job.location || 'Chưa cập nhật'}
+                                left={(props) => <List.Icon {...props} icon="map-marker" color="#F2A0B6" />}
+                                titleStyle={styles.infoTitle}
+                            />
+                            <Divider style={styles.infoDivider} />
+                            <List.Item
+                                title="Website"
+                                description={companyData?.website || 'Chưa cập nhật'}
+                                left={(props) => <List.Icon {...props} icon="web" color="#F2A0B6" />}
+                                titleStyle={styles.infoTitle}
+                                descriptionStyle={companyData?.website ? styles.websiteText : undefined}
+                            />
+                            <Divider style={styles.infoDivider} />
+                            <List.Item
+                                title="Giới thiệu"
+                                description={companyData?.description || 'Nhấn để xem đầy đủ hồ sơ công ty'}
+                                left={(props) => <List.Icon {...props} icon="text-box-outline" color="#F2A0B6" />}
+                                titleStyle={styles.infoTitle}
+                                descriptionNumberOfLines={3}
+                                descriptionStyle={{ lineHeight: 20 }}
+                            />
+                        </Card.Content>
+                    </Card>
+                </TouchableOpacity>
+
                 {/* Nút ứng tuyển dành riêng cho ứng viên */}
                 {user?.role === 'candidate' && (
                     <Button 
@@ -188,14 +263,43 @@ const styles = StyleSheet.create({
     logo: { backgroundColor: '#f0f0f0', marginBottom: 10 },
     titleText: { fontSize: 20, fontWeight: 'bold', color: '#333', textAlign: 'center', paddingHorizontal: 20 },
     companyText: { fontSize: 15, color: '#666', marginTop: 5, marginBottom: 10, textAlign: 'center' },
-    rowInfo: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginVertical: 5 },
-    chip: { backgroundColor: '#FFF0F3', borderRadius: 20 },
-    chipText: { color: '#F2A0B6', fontSize: 12, fontWeight: 'bold' },
+    rowInfo: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginVertical: 5, paddingHorizontal: 8 },
+    chip: {
+        backgroundColor: '#FFF0F3',
+        borderRadius: 20,
+        alignSelf: 'flex-start',
+        maxWidth: '100%',
+        paddingVertical: 4,
+    },
+    chipText: { color: '#F2A0B6', fontSize: 12, fontWeight: 'bold', lineHeight: 18 },
     saveButton: { position: 'absolute', top: 5, right: 5 },
     contentCard: { backgroundColor: '#fff', borderRadius: 12, elevation: 1, marginBottom: 15 },
     sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#F2A0B6' },
-    skillsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-    skillChip: { borderColor: '#ccc' },
+    infoTitle: { fontSize: 12, color: '#999' },
+    infoDivider: { marginHorizontal: 16, backgroundColor: '#f0f0f0' },
+    websiteText: { color: '#1565C0' },
+    skillsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        paddingBottom: 4,
+    },
+    skillPill: {
+        borderWidth: 1,
+        borderColor: '#F2A0B6',
+        backgroundColor: '#FFF0F3',
+        borderRadius: 20,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        alignSelf: 'flex-start',
+        maxWidth: '100%',
+    },
+    skillPillText: {
+        fontSize: 13,
+        lineHeight: 20,
+        color: '#444',
+        flexShrink: 1,
+    },
     subInfo: { fontSize: 14, color: '#555', marginVertical: 4 },
     applyBtn: { marginVertical: 15, borderRadius: 10, paddingVertical: 4 },
 });
