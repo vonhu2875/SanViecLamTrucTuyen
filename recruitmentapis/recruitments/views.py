@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics, parsers, status, permissions, filters
 from rest_framework.decorators import action
@@ -9,6 +10,7 @@ from recruitments import serializers
 from recruitments import perms, paginators
 from django.db.models import Count, Sum, Q
 from django.db.models.functions import ExtractMonth, ExtractYear
+
 
 #USER
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
@@ -260,7 +262,6 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
                 "location": job.location,
                 "category": job.category.name if job.category else '',
             })
-
         return Response({
             "jobs": jobs_data,
             "comparison_stats": salary_chart,

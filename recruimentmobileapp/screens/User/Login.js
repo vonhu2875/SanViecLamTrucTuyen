@@ -1,17 +1,22 @@
-import React, { useState, useContext } from 'react';
-import { View, ActivityIndicator, Alert, ScrollView, StyleSheet, Image } from 'react-native';
+import React, { useState, useContext, useEffect } from 'react';
+import { View, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
 import { Button, TextInput, Text } from 'react-native-paper';
-import  MyUserContext  from '../../configs/Contexts'; 
+import MyUserContext from '../../configs/Contexts'; 
 import API, { authApis, endpoints } from '../../configs/Apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Styles from '../../styles/Styles';
 import { SafeAreaView } from 'react-native';
+
+WebBrowser.maybeCompleteAuthSession();
+
 const Login = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [err, setErr] = useState();
     const [loading, setLoading] = useState(false);
     const [secureText, setSecureText] = useState(true);
+    const [, dispatch] = useContext(MyUserContext); 
+    
 
     const validate = () => {
         if (!username.trim() || !password.trim()) {
@@ -19,37 +24,27 @@ const Login = ({ navigation }) => {
             return false;
         }
         return true;
-    }
-    const [, dispatch] = useContext(MyUserContext); 
-
+    };
+     
     const handleLogin = async () => {
         if(validate() === true) {
             setErr("");
-            
-        try {
-            setLoading(true);
-            let res = await API.post(endpoints['login'], {
-                'client_id': 'cy3pBRQUMCe4B3FXwWWPClMzfzYkFmquHgsZ7Qh8',
-                'client_secret': 'ngf6rBfOniHOIPLXqfbZJsBCCTAhCy4qNlPmjHhMLx7mcY9xSw0RGjCHlErZa6pPsXj1AsPkpVIXMvovVObMTQeCkRxNTWz0bGpK6uRoZoHVfpQtWJADR2wjzWtkTmCN',
-                'username': username.trim(),
-                'password': password,
-                'grant_type': 'password'
-            });
-
-            console.log(res.data);
-            await AsyncStorage.setItem('token', res.data.access_token);
-            let u = await authApis(res.data.access_token).get(endpoints['current-user']);
-                console.info(u.data);
-            dispatch({
-                "type": "LOGIN",
-                "payload": u.data
-            });
-        } catch (error) {
-            console.error(error);
-            Alert.alert('Đăng nhập thất bại', 'Vui lòng kiểm tra lại Tài khoản và Mật khẩu!');
-        } finally {
-            setLoading(false);
-        }
+            try {
+                setLoading(true);
+                let res = await API.post(endpoints['login'], {
+                    'password': password,
+                    'username': username.trim(),
+                    'grant_type': 'password'
+                });
+                await AsyncStorage.setItem('token', res.data.access_token);
+                let u = await authApis(res.data.access_token).get(endpoints['current-user']);
+                dispatch({ "type": "LOGIN", "payload": u.data });
+            } catch (error) {
+                console.error(error);
+                Alert.alert('Đăng nhập thất bại', 'Vui lòng kiểm tra lại!');
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -57,10 +52,7 @@ const Login = ({ navigation }) => {
         <SafeAreaView style={Styles.safeArea}>
             <ScrollView contentContainerStyle={Styles.container}>
                 <View style={Styles.formContainer}>
-                    <Image
-                    source={require('../../assets/jobmate-logo.png')}
-                    style={Styles.logoIcon}
-                    />
+                    <Image source={require('../../assets/jobmate-logo.png')} style={Styles.logoIcon} />
                     <Text style={Styles.title}>JOBMATE</Text>
                     <Text style={Styles.subtitle}>Kết nối cơ hội – Dẫn lối thành công</Text>
 
@@ -89,44 +81,38 @@ const Login = ({ navigation }) => {
                     />
 
                     {loading ? (
-                        <ActivityIndicator size="small" color="#F2A0B6" style={[Styles.input]} />
+                        <ActivityIndicator size="small" color="#F2A0B6" style={[Styles.input, { marginTop: 20 }]} />
                     ) : (
-                        <Button 
-                            mode="contained" 
-                            onPress={handleLogin}
-                            buttonColor="#F2A0B6"
-                            style={Styles.button}
-                        >
+                        <>
+                        <Button mode="contained" onPress={handleLogin} buttonColor="#F2A0B6" style={Styles.button}>
                             Đăng nhập
                         </Button>
+                        <Button 
+                            mode="outlined" 
+                            icon="google"
+                            disabled={loading}
+                            onPress={handleGoogleLogin} 
+                            textColor="#db4437"
+                            style={[Styles.button, { marginTop: 10, borderColor: '#db4437' }]}
+                        >
+                            Đăng nhập bằng Google
+                        </Button>
+                        </>
                     )}
                 </View>
                 <View style={Styles.registerContainer}>
                     <Text style={Styles.registerText}>Bạn chưa có tài khoản? </Text>
-                    <Text 
-                        style={Styles.registerLink} 
-                        onPress={() => navigation.navigate('register')}
-                    >
+                    <Text style={Styles.registerLink} onPress={() => navigation.navigate('register')}>
                         Đăng ký ngay
                     </Text>
                 </View>
                 <View style={Styles.guestContainer}>
-                    <Text 
-                        style={Styles.guestLink} 
-                        onPress={() => {
-                            // Nạp một Object ảo đánh dấu đây là Khách vào Context để mở khóa TabNavigator
-                            dispatch({
-                                "type": "LOGIN",
-                                "payload": { username: "guest", role: "GUEST", first_name: "Khách", last_name: "" }
-                            });
-                        }}
-                    >
+                    <Text style={Styles.guestLink} onPress={() => dispatch({ "type": "LOGIN", "payload": { username: "guest", role: "GUEST", first_name: "Khách", last_name: "" } })}>
                         Tiếp tục với tư cách Khách
                     </Text>
                 </View>
             </ScrollView>
         </SafeAreaView>
-
     );
 };
 

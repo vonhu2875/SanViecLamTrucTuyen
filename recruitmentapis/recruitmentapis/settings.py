@@ -54,18 +54,22 @@ AUTH_USER_MODEL = 'recruitments.User'
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'recruitments.middleware.OauthMiddleware',
 ]
 
+
+
 CORS_ALLOW_ALL_ORIGINS = True
-ALLOWED_HOSTS = ['192.168.2.21', '127.0.0.1', '192.168.88.16', '192.168.102.9', 'localhost']
-OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
+ALLOWED_HOSTS = ['192.168.2.21', '127.0.0.1']
+OAUTH2_PROVIDER = {
+    'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore',
+}
 
 ROOT_URLCONF = 'recruitmentapis.urls'
 
@@ -95,7 +99,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'recruitmentdb',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': 'Nhu...10c11c12cDHc',
         'HOST': '' # mặc định localhost
     }
 }
@@ -116,6 +120,7 @@ REST_FRAMEWORK = {
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     )
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -158,5 +163,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CLIENT_ID = 'FwOYqcOTat46gPWcko6SpCfA4zqOF5L1RZ7qxFQH'
-CLIENT_SECRET = 'GXGqGDcHzdLCSuiFpcyIqIOa4FtptwRWkq3JvNeNfUKFVRB61wgFV0xFuXoUYM2Rz5kn6oLib4aoZl2PykZy6mGl8fjgTvC3Tz4QkjrNr8lo84aiiqby9DVdEH9Bvpei'
+CLIENT_ID = 'EBi1MkqKzOItn2QRxb4kT7HA7VYWVEpDl1baYIwQ'
+CLIENT_SECRET = 'RaVYSKih82FyqZBQQY9AluzpfzhaVdwnXtnKfJxhxBnxLwfY6wjvaPLVX14FAxXSiMWauUEd61bjJjaSxkGIikRkkS51U96tyFaupmDEQZMm9BdbsZWt8296gh9Adq7t'

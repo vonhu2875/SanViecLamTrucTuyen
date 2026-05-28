@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from rest_framework import serializers
 from recruitments.models import User, Company, Application, Job, Category, Skill, Payment
 
