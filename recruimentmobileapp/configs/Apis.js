@@ -1,12 +1,11 @@
 import axios from "axios";
 
-const HOST = "http://192.168.88.16:8000"
+const HOST = "http://192.168.2.21:8000"
 export const endpoints = {
     'register': '/users/',
     'login': '/o/token/',
     'google-login': '/auth/google/',
     'current-user': '/users/current-user/',
-
     'companies': '/companies/',
     'current-company': '/companies/current-company/',
     'categories': '/categories/',

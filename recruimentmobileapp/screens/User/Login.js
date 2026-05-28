@@ -7,7 +7,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Styles from '../../styles/Styles';
 import { SafeAreaView } from 'react-native';
 
-WebBrowser.maybeCompleteAuthSession();
 
 const Login = ({ navigation }) => {
     const [username, setUsername] = useState('');
@@ -86,16 +85,6 @@ const Login = ({ navigation }) => {
                         <>
                         <Button mode="contained" onPress={handleLogin} buttonColor="#F2A0B6" style={Styles.button}>
                             Đăng nhập
-                        </Button>
-                        <Button 
-                            mode="outlined" 
-                            icon="google"
-                            disabled={loading}
-                            onPress={handleGoogleLogin} 
-                            textColor="#db4437"
-                            style={[Styles.button, { marginTop: 10, borderColor: '#db4437' }]}
-                        >
-                            Đăng nhập bằng Google
                         </Button>
                         </>
                     )}

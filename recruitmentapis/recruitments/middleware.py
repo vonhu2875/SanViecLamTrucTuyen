@@ -11,15 +11,12 @@ class OauthMiddleware(MiddlewareMixin):
     def process_request(self, request):
         if (request.path == '/o/token/') and request.method == 'POST':
 
-            # Trường hợp 1: Frontend gửi dữ liệu dạng application/x-www-form-urlencoded (Form Data)
             if request.content_type == 'application/x-www-form-urlencoded':
-                # Sửa đổi nội dung POST để nhét client_id và client_secret vào
                 post_data = request.POST.copy()
                 post_data['client_id'] = settings.CLIENT_ID
                 post_data['client_secret'] = settings.CLIENT_SECRET
                 request.POST = post_data
 
-            # Trường hợp 2: Frontend gửi dữ liệu dạng application/json
             elif request.content_type == 'application/json':
                 try:
                     data = json.loads(request.body)
