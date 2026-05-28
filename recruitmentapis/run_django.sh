@@ -78,24 +78,24 @@ def get_or_create_employer(username, email, first_name, last_name, company_name,
     return comp
 
 comp1 = get_or_create_employer(
-    'employer1', 'hr.techcorp@example.com', 'Thanh', 'Nguyen',
-    'Tap doan Cong nghe TechCorp', 'Toa nha Landmark 81, TP.HCM',
-    'https://techcorp.example.com', 'Cong ty cong nghe phan mem hang dau Viet Nam.'
+    'employer1', 'hr.techcorp@example.com', 'Thành', 'Nguyễn',
+    'Tập đoàn Công nghệ TechCorp', 'Tòa nhà Landmark 81, TP.HCM',
+    'https://techcorp.example.com', 'Công ty công nghệ phần mềm hàng đầu Việt Nam.'
 )
 comp2 = get_or_create_employer(
-    'employer2', 'hr.marcom@example.com', 'Huong', 'Le',
-    'Agency Truyen thong MarCom', 'Quan 1, TP. Ho Chi Minh',
-    'https://marcom.example.com', 'Agency Marketing so hang dau, giai phap truyen thong tich hop.'
+    'employer2', 'hr.marcom@example.com', 'Hương', 'Lê',
+    'Agency Truyền thông MarCom', 'Quận 1, TP. Hồ Chí Minh',
+    'https://marcom.example.com', 'Agency Marketing số hàng đầu, giải pháp truyền thông tích hợp.'
 )
 comp3 = get_or_create_employer(
-    'employer3', 'hr.salespro@example.com', 'Minh', 'Tran',
-    'SalesPro Distribution', 'Quan 7, TP. Ho Chi Minh',
-    'https://salespro.example.com', 'Cong ty phan phoi va kinh doanh da nganh toan quoc.'
+    'employer3', 'hr.salespro@example.com', 'Minh', 'Trần',
+    'SalesPro Distribution', 'Quận 7, TP. Hồ Chí Minh',
+    'https://salespro.example.com', 'Công ty phân phối và kinh doanh đa ngành toàn quốc.'
 )
 comp4 = get_or_create_employer(
-    'employer4', 'hr.auditplus@example.com', 'Lan', 'Pham',
-    'AuditPlus Accounting', 'Quan 3, TP. Ho Chi Minh',
-    'https://auditplus.example.com', 'Dich vu ke toan, kiem toan va tu van tai chinh uy tin.'
+    'employer4', 'hr.auditplus@example.com', 'Lan', 'Phạm',
+    'AuditPlus Accounting', 'Quận 3, TP. Hồ Chí Minh',
+    'https://auditplus.example.com', 'Dịch vụ kế toán, kiểm toán và tư vấn tài chính uy tín.'
 )
 print("Employers & Companies OK")
 
