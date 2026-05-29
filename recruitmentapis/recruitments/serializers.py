@@ -27,6 +27,8 @@ class SimpleUserSerializer(ItemSerializer):
         model = User
         fields = ['first_name', 'last_name', 'email', 'avatar', 'phone']
 
+
+
 class UserSerializer(ItemSerializer):
     company = CompanyShortSerializer(read_only=True)
     class Meta:
@@ -96,6 +98,12 @@ class CompanySimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = ['name','description', 'logo', 'address', 'website', 'active']
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.logo:
+            data['logo'] = instance.logo.url
+        return data
+
 
 class CompanySerializer(CompanySimpleSerializer):
     class Meta:
@@ -109,7 +117,7 @@ class CompanySerializer(CompanySimpleSerializer):
         data = super().to_representation(instance)
         if instance.logo:
             data['logo'] = instance.logo.url
-        return data
+
         if instance.created_date:
             data['created_date'] = instance.created_date.strftime("%d/%m/%Y %H:%M:%S")
         if instance.updated_date:
