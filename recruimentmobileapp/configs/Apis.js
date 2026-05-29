@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const HOST = "http://10.50.26.203:8000"
+const HOST = "http://192.168.88.16:8000"
 export const endpoints = {
     'register': '/users/',
     'login': '/o/token/',

@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import {
     View, ScrollView, StyleSheet, Alert,
     TouchableOpacity, TextInput, KeyboardAvoidingView,
-    Platform, Keyboard,
+    Platform, Keyboard, DeviceEventEmitter // <--- Đã thêm DeviceEventEmitter
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { Text, Avatar, ActivityIndicator } from 'react-native-paper';
@@ -66,7 +66,9 @@ const InfoRow = ({ icon, label, value }) => (
 const ApplicationDetail = () => {
     const navigation = useNavigation();
     const route = useRoute();
-    const { application: initialApp, jobTitle, onStatusUpdate } = route.params;
+    
+    // <--- Đã xóa onStatusUpdate khỏi params
+    const { application: initialApp, jobTitle } = route.params;
 
     const [app, setApp] = useState(initialApp);
     const [comment, setComment] = useState(initialApp.employer_comment || '');
@@ -131,7 +133,10 @@ const ApplicationDetail = () => {
                             const updated = res.data || { ...app, ...payload };
                             setApp(updated);
                             setComment(updated.employer_comment || '');
-                            if (onStatusUpdate) onStatusUpdate(updated);
+                            
+                            // <--- Đã thay bằng DeviceEventEmitter
+                            DeviceEventEmitter.emit('onApplicationUpdate', updated);
+                            
                             Alert.alert('Thành công', `Đã cập nhật: ${newCfg.label}`);
                         } catch (err) {
                             Alert.alert('Lỗi', 'Không thể cập nhật trạng thái.');
@@ -157,7 +162,10 @@ const ApplicationDetail = () => {
             const updated = res.data || { ...app, ...payload };
             setApp(updated);
             setComment(updated.employer_comment || '');
-            if (onStatusUpdate) onStatusUpdate(updated);
+            
+            // <--- Đã thay bằng DeviceEventEmitter
+            DeviceEventEmitter.emit('onApplicationUpdate', updated);
+            
             Alert.alert('Đã lưu', 'Nhận xét của bạn đã được lưu.');
         } catch (err) {
             Alert.alert('Lỗi', 'Không thể lưu nhận xét.');
@@ -166,11 +174,10 @@ const ApplicationDetail = () => {
         }
     };
 
-    // Khi focus vào ô nhận xét → scroll xuống cuối để form không bị bàn phím che
     const handleCommentFocus = () => {
         setTimeout(() => {
             scrollRef.current?.scrollToEnd({ animated: true });
-        }, 300); // delay 300ms chờ bàn phím mở xong
+        }, 300);
     };
 
     return (
@@ -185,7 +192,6 @@ const ApplicationDetail = () => {
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
             >
-                {/* ── Thông tin ứng viên ── */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Thông tin ứng viên</Text>
                     <View style={styles.avatarRow}>
@@ -201,7 +207,6 @@ const ApplicationDetail = () => {
                         )}
                         <View style={{ marginLeft: 14, flex: 1 }}>
                             <Text style={styles.candidateName}>{candidateName}</Text>
-                            {/* Status pill — tự vẽ, không dùng Chip */}
                             <View style={[styles.statusPill, { backgroundColor: cfg.bg }]}>
                                 <MaterialCommunityIcons name={cfg.icon} size={13} color={cfg.color} />
                                 <Text style={[styles.statusPillText, { color: cfg.color }]}>{cfg.label}</Text>
@@ -217,7 +222,6 @@ const ApplicationDetail = () => {
                     </View>
                 </View>
 
-                {/* ── Vị trí ứng tuyển ── */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Vị trí ứng tuyển</Text>
                     <View style={styles.infoBlock}>
@@ -227,7 +231,6 @@ const ApplicationDetail = () => {
                     </View>
                 </View>
 
-                {/* ── Thư giới thiệu ── */}
                 {app.cover_letter ? (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Thư giới thiệu</Text>
@@ -235,7 +238,6 @@ const ApplicationDetail = () => {
                     </View>
                 ) : null}
 
-                {/* ── CV ── */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Hồ sơ CV</Text>
                     <TouchableOpacity
@@ -254,7 +256,6 @@ const ApplicationDetail = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* ── Nhận xét / Đánh giá ── */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Nhận xét / Đánh giá</Text>
                     <TextInput
@@ -267,8 +268,8 @@ const ApplicationDetail = () => {
                         value={comment}
                         onChangeText={setComment}
                         textAlignVertical="top"
-                        onFocus={handleCommentFocus}   // ← scroll lên khi focus
-                        scrollEnabled={false}           // để ScrollView cha scroll, không scroll bên trong
+                        onFocus={handleCommentFocus}
+                        scrollEnabled={false}
                         blurOnSubmit={false}
                     />
                     <TouchableOpacity
@@ -287,7 +288,6 @@ const ApplicationDetail = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* ── Nút hành động ── */}
                 <View style={styles.actionSection}>
                     {(app.status === 'pending' || app.status === 'reviewed') && (
                         <View style={styles.actionRow}>
@@ -327,7 +327,6 @@ const ApplicationDetail = () => {
 
 const styles = StyleSheet.create({
     content: { padding: 14 },
-
     section: {
         backgroundColor: '#fff', borderRadius: 12,
         padding: 14, marginBottom: 12,
@@ -337,7 +336,6 @@ const styles = StyleSheet.create({
         fontSize: 11, fontWeight: '700', color: '#9CA3AF',
         textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12,
     },
-
     avatarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
     candidateName: { fontSize: 17, fontWeight: '700', color: '#111827', marginBottom: 6 },
     statusPill: {
@@ -346,14 +344,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
     },
     statusPillText: { fontSize: 12, fontWeight: '600' },
-
     infoBlock: { gap: 9 },
     infoRow: { flexDirection: 'row', alignItems: 'flex-start' },
     infoLabel: { fontSize: 13, color: '#6B7280', width: 70 },
     infoValue: { fontSize: 13, color: '#111827', flex: 1, fontWeight: '500' },
-
     coverLetter: { fontSize: 13, color: '#6B7280', fontStyle: 'italic', lineHeight: 20 },
-
     cvBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 8,
         borderWidth: 1, borderColor: COLORS.primary,
@@ -361,7 +356,6 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
     },
     cvBtnText: { fontSize: 14, fontWeight: '600' },
-
     commentInput: {
         borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8,
         padding: 10, fontSize: 14, color: '#111827',
@@ -373,7 +367,6 @@ const styles = StyleSheet.create({
         borderRadius: 8, paddingVertical: 10, marginTop: 10,
     },
     saveCommentText: { color: '#fff', fontSize: 14, fontWeight: '600' },
-
     actionSection: { marginTop: 4 },
     actionRow: { flexDirection: 'row', gap: 10 },
     actionBtn: {

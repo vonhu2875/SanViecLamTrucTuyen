@@ -102,7 +102,7 @@ const JobDetail = ({ route, navigation }) => {
     }
 
     const companyId = job?.employer?.id;
-    const companyData = job?.employer;
+    const companyData = companyPreview || job?.employer;
     console.log(companyId)
     console.log(companyData)
     const handleOpenCompanyDetail = () => {

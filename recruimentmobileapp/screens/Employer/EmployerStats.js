@@ -1,5 +1,5 @@
 // screens/Employer/EmployerStats.js
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -12,7 +12,6 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApis, endpoints } from '../../configs/Apis';
-import { EmployerContext } from '../../configs/EmployerContext';
 import { COLORS } from '../../constants/Colors';
 import Styles from '../../styles/Styles'; // <-- Import file style chung ở đây
 
@@ -98,7 +97,6 @@ const MonthlyBarChart = ({ data }) => {
 
 // ─── MÀN HÌNH CHÍNH (MAIN COMPONENT) ─────────────────────────
 const EmployerStats = () => {
-    const { company } = useContext(EmployerContext);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
