@@ -10,8 +10,7 @@ import Apis, { endpoints } from '../../configs/Apis';
 const PostJob = ({ route, navigation }) => {
     
     const editJobData = route.params?.editJobData || null;
-    const isEditMode = !!editJobData;
-    console.log("DỮ LIỆU CŨ NHẬN ĐƯỢC:", editJobData);
+    const isEditMode = Boolean(editJobData);
     // 1. Quản lý trạng thái phân quyền dựa theo kiểm duyệt Backend
     const [hasCompany, setHasCompany] = useState(true);
     const [isApproved, setIsApproved] = useState(true);
@@ -169,6 +168,11 @@ const PostJob = ({ route, navigation }) => {
     const handlePostJob = async () => {
         if (!title || !salaryMin || !salaryMax || !location || !description || !requirements || !benefits) {
             Alert.alert("Thông báo", "Vui lòng điền đầy đủ thông tin bắt buộc có dấu (*)");
+            return;
+        }
+
+        if (parseFloat(salaryMin) > parseFloat(salaryMax)){
+            Alert.alert("Lỗi", "Lương tối đa phải lớn hơn lương tối thiểu");
             return;
         }
 

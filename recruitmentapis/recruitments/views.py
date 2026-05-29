@@ -28,8 +28,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
         return Response(serializers.UserSerializer(u, context={'request':request}).data, status=status.HTTP_200_OK)
 
 #COMPANY
-class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView,
-                     generics.UpdateAPIView):
+class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Company.objects.all()
     serializer_class = serializers.CompanySerializer
     parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
@@ -53,8 +52,8 @@ class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAP
         return serializers.CompanySerializer
 
     def get_permissions(self):
-        if self.action in ['create', 'current_company']:
-            return [perms.IsEmployer()]
+        if self.action in ['current_company']:
+            return [perms.IsCompanyOwner()]
         if self.action in ['update', 'partial_update']:
             return [permissions.IsAuthenticated(), perms.IsCompanyOwner()]
         if self.action == 'approve':
@@ -62,16 +61,16 @@ class CompanyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAP
             return [permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
-    def update(self, request, *args, **kwargs):
-        company = self.get_object()
-        if 'is_approved' in request.data and not request.user.is_staff:
-            raise PermissionDenied("Bạn không có quyền thay đổi trạng thái phê duyệt.")
-
-        s = self.get_serializer(company, data=request.data, partial=True)
-        s.is_valid(raise_exception=True)
-        company = s.save()
-        return Response(serializers.CompanySerializer(company, context={'request': request}).data,
-                        status=status.HTTP_200_OK)
+    # def update(self, request, *args, **kwargs):
+    #     company = self.get_object()
+    #     if 'is_approved' in request.data and not request.user.is_staff:
+    #         raise PermissionDenied("Bạn không có quyền thay đổi trạng thái phê duyệt.")
+    #
+    #     s = self.get_serializer(company, data=request.data, partial=True)
+    #     s.is_valid(raise_exception=True)
+    #     company = s.save()
+    #     return Response(serializers.CompanySerializer(company, context={'request': request}).data,
+    #                     status=status.HTTP_200_OK)
 
     @action(methods=['patch'], detail=True, url_path='approve')
     def approve(self, request, pk=None):
@@ -124,8 +123,9 @@ class SkillViewSet(viewsets.ViewSet, generics.ListAPIView):
 class CategoryViewset(viewsets.ViewSet, generics.ListAPIView):
     queryset = Category.objects.filter(active=True)
     serializer_class = serializers.CategorySerializer
+
 class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.DestroyAPIView, generics.RetrieveAPIView):
-    queryset = Job.objects.filter(active=True)
+    queryset = Job.objects.all()
     serializer_class = serializers.JobDetailSerializer
     pagination_class = paginators.JobPagination
 
@@ -143,6 +143,7 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
         'skills__name': ['exact'],
         'salary_min': ['gte'],
         'salary_max': ['lte'],
+        'is_featured': ['exact']
     }
 
     ordering_fields = ['salary_min', 'salary_max', 'created_date']
@@ -150,6 +151,7 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
 
     def get_queryset(self):
         user = self.request.user
+        Job.objects.filter(active=True, deadline__lt=datetime.now()).update(active=False)
         query = self.queryset
         saved = self.request.query_params.get('saved')
         if saved == 'true' and self.request.user.is_authenticated:
@@ -186,10 +188,6 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
     def perform_create(self, serializer):
         company = self.request.user.company
         serializer.save(employer=company)
-
-    def perform_destroy(self, instance):
-        instance.active = False
-        instance.save()
 
     @action(methods=['patch'], detail=True, url_path='update-job')
     def update_job(self, request, pk=None):
@@ -236,12 +234,14 @@ class JobViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
         if not jobs.exists():
             return Response({"detail": "Không tìm thấy công việc hợp lệ."}, status=status.HTTP_404_NOT_FOUND)
 
+
         # Dữ liệu chi tiết từng job
         jobs_data = serializers.JobDetailSerializer(jobs, many=True, context={'request': request}).data
 
         # --- Thống kê tổng hợp để vẽ chart ---
         salary_chart = []
-        from datetime import date
+
+
         today = date.today()
 
         for job in jobs:

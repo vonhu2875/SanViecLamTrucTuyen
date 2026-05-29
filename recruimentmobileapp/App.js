@@ -17,6 +17,7 @@ import JobDetail from './screens/User/JobDetail';
 import ApplyJob from './screens/User/ApplyJob';
 import Register from './screens/User/Register';
 import SavedJobs from './screens/User/SavedJob';
+import MyApplications from './screens/User/MyApplications';
 import PostJob from './screens/User/PostJob';
 import Profile from './screens/User/Profile';
 import Login from './screens/User/Login';
@@ -52,6 +53,7 @@ function MainTabs() {
         }} 
       />
       {user && user.role === 'candidate' && 
+        <>
         <Tab.Screen name="savedJobs" component={SavedJobs} options=
           {{
             headerShown: true,
@@ -65,6 +67,18 @@ function MainTabs() {
             )
           }} 
         />
+        <Tab.Screen name="myApplications" component={MyApplications} options={{
+            headerShown: true,
+            headerLeft: () => null,
+            headerTintColor: '#F2A0B6',
+            title: 'Công việc đã ứng tuyển',
+            tabBarLabel: 'Đã nộp',
+            tabBarIcon: ({ color, size }) => (
+              <IconButton icon="file-document-outline" iconColor={color} size={size} style={{ margin: 0 }} />
+            ),
+          }}
+        />
+        </>
       }
       {user && user.role === 'employer' &&
         (<>

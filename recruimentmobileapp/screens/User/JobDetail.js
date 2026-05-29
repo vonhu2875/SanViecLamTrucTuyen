@@ -42,7 +42,7 @@ const JobDetail = ({ route, navigation }) => {
     }, [jobId]);
 
     useEffect(() => {
-        const companyId = job?.employer?.id || job?.company?.id || job?.employer_id;
+        const companyId = job?.employer?.id
         if (!companyId) return;
 
         const fetchCompanyPreview = async () => {
@@ -101,8 +101,10 @@ const JobDetail = ({ route, navigation }) => {
         );
     }
 
-    const companyId = job?.employer?.id || job?.company?.id || job?.employer_id;
-    const companyData = companyPreview || job?.employer || {};
+    const companyId = job?.employer?.id;
+    const companyData = job?.employer;
+    console.log(companyId)
+    console.log(companyData)
     const handleOpenCompanyDetail = () => {
         if (!companyId) {
             Alert.alert('Thông báo', 'Không tìm thấy thông tin công ty để xem chi tiết.');

@@ -20,7 +20,7 @@ const Home = ({ navigation }) => {
     const [salaryMax, setSalaryMax] = useState('');   
     const [ordering, setOrdering] = useState('-created_date'); 
     const [showFilter, setShowFilter] = useState(false); 
-
+    const [isJobFeature, setJobFeature] = useState(false);
     // State quản lý danh sách so sánh
     const [compareList, setCompareList] = useState([]); // mảng job objects đã chọn
     const hasCompareBar = compareList.length >= 2;
@@ -48,7 +48,7 @@ const Home = ({ navigation }) => {
     // 🌟 1. Hàm lấy danh sách danh mục ngành nghề từ Backend khi vào App
     const fetchCategories = async () => {
         try {
-            const response = await Apis.get(endpoints['categories'] || '/categories/'); // Thay bằng endpoint chuẩn của bạn nếu có trong Apis.js
+            const response = await Apis.get(endpoints['categories']);
             setCategories(response.data);
         } catch (error) {
             console.error("Lỗi lấy danh mục ngành nghề:", error);
@@ -58,19 +58,30 @@ const Home = ({ navigation }) => {
     // Hàm gọi API lấy danh sách Job từ Django Backend
     const fetchJobs = async (isRefresh = false) => {
         try {
-            if (!isRefresh) setLoading(true);
+            if (!isRefresh) 
+                setLoading(true);
+            setNextPageUrl(null);
 
             const params = new URLSearchParams();
-            if (searchQuery) params.append('search', searchQuery);
-            if (ordering) params.append('ordering', ordering);
-            if (location) params.append('location', location);
+            if (searchQuery) 
+                params.append('search', searchQuery);
+            if (ordering) 
+                params.append('ordering', ordering);
+            if (location) 
+                params.append('location', location);
             
-            // 🌟 Đẩy id danh mục đang chọn lên Backend để lọc
-            if (categoryId) params.append('category', categoryId); 
+            // Đẩy id danh mục đang chọn lên Backend để lọc
+            if (categoryId) 
+                params.append('category', categoryId); 
             
-            if (skillName) params.append('skills__name', skillName); 
-            if (salaryMin) params.append('salary_min__gte', salaryMin);
-            if (salaryMax) params.append('salary_max__lte', salaryMax);
+            if (skillName) 
+                params.append('skills__name', skillName); 
+            if (salaryMin) 
+                params.append('salary_min__gte', salaryMin);
+            if (salaryMax) 
+                params.append('salary_max__lte', salaryMax);
+            if (isJobFeature)
+                params.append('is_featured', 'true')
 
             const queryString = params.toString() ? `?${params.toString()}` : '';
             const response = await Apis.get(`${endpoints['jobs']}${queryString}`);
@@ -78,7 +89,7 @@ const Home = ({ navigation }) => {
             
             if (data && data.results) {
                 setJobs(data.results);
-                setNextPageUrl(data.next); 
+                setNextPageUrl(data.results.length > 0 ? data.next : null);
             } else {
                 setJobs(data);
                 setNextPageUrl(null);
@@ -92,11 +103,11 @@ const Home = ({ navigation }) => {
     };
 
     const loadMoreJobs = async () => {
-        if (!nextPageUrl || loadingMore) return;
+        if (!nextPageUrl || loadingMore) 
+            return;
         try {
             setLoadingMore(true);
-            const shortUrl = nextPageUrl.split('/api')[1]; 
-            const response = await Apis.get(shortUrl);
+            const response = await Apis.get(nextPageUrl);
             if (response.data && response.data.results) {
                 setJobs(prevJobs => [...prevJobs, ...response.data.results]); 
                 setNextPageUrl(response.data.next); 
@@ -116,7 +127,7 @@ const Home = ({ navigation }) => {
     // 🌟 3. Tự động tải lại danh sách Job mỗi khi người dùng đổi từ khóa hoặc đổi Tab danh mục (categoryId)
     useEffect(() => {
         fetchJobs();
-    }, [searchQuery, ordering, categoryId]);
+    }, [searchQuery, ordering, categoryId, isJobFeature]);
 
     const formatSalary = (salary) => {
         if (!salary) return "Thỏa thuận";
@@ -237,7 +248,7 @@ const Home = ({ navigation }) => {
                 </Card>
             )}
 
-            {/* 🌟 4. THANH TAB DANH MỤC CUỘN NGANG (HORIZONTAL SCROLL) */}
+            
             <View style={{ marginBottom: 10 }}>
                 <ScrollView 
                     horizontal 
@@ -246,26 +257,45 @@ const Home = ({ navigation }) => {
                 >
                     {/* Tab "Tất cả" mặc định */}
                     <TouchableOpacity 
-                        style={[styles.categoryTab, categoryId === '' && styles.activeCategoryTab]}
-                        onPress={() => setCategoryId('')}
+                        style={[styles.categoryTab, (categoryId === '' && !isJobFeature) && styles.activeCategoryTab]}
+                        onPress={() => {
+                            setCategoryId('');
+                            setJobFeature(false);
+                        }}
                     >
-                        <Text style={[styles.categoryTabText, categoryId === '' && styles.activeCategoryTabText]}>
+                        <Text style={[styles.categoryTabText, (categoryId === '' && !isJobFeature) && styles.activeCategoryTabText]}>
                             Tất cả việc làm
                         </Text>
                     </TouchableOpacity>
 
-                    {/* Vòng lặp map danh sách ngành nghề đổ từ Backend */}
+                    {/* Tab "Nổi bật" */}
+                    <TouchableOpacity 
+                        style={[styles.categoryTab, isJobFeature === true && styles.activeCategoryTab]}
+                        onPress={() => {
+                            setCategoryId('');    // Reset danh mục để chỉ tập trung lọc nổi bật
+                            setJobFeature(true);  // Kích hoạt nổi bật
+                        }}
+                    >
+                        <Text style={[styles.categoryTabText, isJobFeature === true && styles.activeCategoryTabText]}>
+                            Nổi bật
+                        </Text>
+                    </TouchableOpacity>
+
+        
                     {categories.map((cat) => (
                         <TouchableOpacity 
                             key={cat.id}
-                            style={[styles.categoryTab, categoryId === cat.id && styles.activeCategoryTab]}
-                            onPress={() => setCategoryId(cat.id)}
+                            style={[styles.categoryTab, (categoryId === cat.id && !isJobFeature) && styles.activeCategoryTab]} 
+                            onPress={() => {
+                                setCategoryId(cat.id);
+                                setJobFeature(false);
+                            }}
                         >
-                            <Text style={[styles.categoryTabText, categoryId === cat.id && styles.activeCategoryTabText]}>
+                            <Text style={[styles.categoryTabText, (categoryId === cat.id && !isJobFeature) && styles.activeCategoryTabText]}>
                                 {cat.name}
                             </Text>
                         </TouchableOpacity>
-                    ))}
+                        ))}
                 </ScrollView>
             </View>
 
@@ -286,7 +316,9 @@ const Home = ({ navigation }) => {
                     refreshing={loading}
                     onRefresh={() => fetchJobs(true)}
                     onEndReached={loadMoreJobs}
-                    onEndReachedThreshold={0.2} 
+                    onEndReachedThreshold={0.1} 
+                    initialNumToRender={6}
+                    maxToRenderPerBatch={10}
                     ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#F2A0B6" style={{ marginVertical: 10 }} /> : null}
                     ListEmptyComponent={
                         <Text style={styles.emptyText}>Hiện tại chưa có công việc nào phù hợp.</Text>

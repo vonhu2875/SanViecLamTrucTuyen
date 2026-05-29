@@ -1,10 +1,11 @@
 // screens/Employer/ApplicationDetail.js
 import React, { useState, useRef } from 'react';
 import {
-    View, ScrollView, StyleSheet, Alert, Linking,
+    View, ScrollView, StyleSheet, Alert,
     TouchableOpacity, TextInput, KeyboardAvoidingView,
     Platform, Keyboard,
 } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { Text, Avatar, ActivityIndicator } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,6 +18,41 @@ const STATUS_CONFIG = {
     reviewed: { label: 'Đang xem xét', color: '#3B82F6', bg: '#EFF6FF', icon: 'eye-outline' },
     accepted: { label: 'Đã duyệt',     color: '#10B981', bg: '#E8F5E9', icon: 'check-circle-outline' },
     rejected: { label: 'Từ chối',      color: '#EF4444', bg: '#FFEBEE', icon: 'close-circle-outline' },
+};
+
+const normalizeCvUrl = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed;
+    }
+    if (trimmed.startsWith('//')) {
+        return `https:${trimmed}`;
+    }
+    return `https://${trimmed}`;
+};
+
+/** Cloudinary đôi khi trả PDF dưới /image/upload/ — chuẩn hóa sang /raw/upload/ */
+const fixCloudinaryCvUrl = (url) => {
+    const normalized = normalizeCvUrl(url);
+    if (!normalized) return null;
+
+    if (
+        normalized.includes('res.cloudinary.com') &&
+        normalized.includes('/image/upload/') &&
+        /\.(pdf|doc|docx)($|\?)/i.test(normalized)
+    ) {
+        return normalized.replace('/image/upload/', '/raw/upload/');
+    }
+    return normalized;
+};
+
+/** Mở PDF/Word trên mobile qua Google Docs viewer (ổn định hơn mở link trực tiếp) */
+const getCvViewerUrl = (fileUrl) => {
+    if (/\.(pdf|doc|docx)($|\?)/i.test(fileUrl)) {
+        return `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(fileUrl)}`;
+    }
+    return fileUrl;
 };
 
 const InfoRow = ({ icon, label, value }) => (
@@ -35,6 +71,33 @@ const ApplicationDetail = () => {
     const [app, setApp] = useState(initialApp);
     const [comment, setComment] = useState(initialApp.employer_comment || '');
     const [saving, setSaving] = useState(false);
+    const [openingCv, setOpeningCv] = useState(false);
+
+    const openCvFile = async () => {
+        const cvUrl = fixCloudinaryCvUrl(app.cv_file);
+        if (!cvUrl) {
+            Alert.alert('Thông báo', 'Ứng viên chưa đính kèm CV.');
+            return;
+        }
+
+        const viewerUrl = getCvViewerUrl(cvUrl);
+
+        try {
+            setOpeningCv(true);
+            await WebBrowser.openBrowserAsync(viewerUrl, {
+                presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+                showTitle: true,
+            });
+        } catch (error) {
+            console.error('Lỗi mở CV:', error, cvUrl);
+            Alert.alert(
+                'Không mở được CV',
+                'Không thể mở file trên thiết bị. Hãy thử lại hoặc kiểm tra kết nối mạng.'
+            );
+        } finally {
+            setOpeningCv(false);
+        }
+    };
 
     const scrollRef = useRef(null);
     const commentRef = useRef(null);
@@ -176,15 +239,17 @@ const ApplicationDetail = () => {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Hồ sơ CV</Text>
                     <TouchableOpacity
-                        style={[styles.cvBtn, !app.cv_file && { opacity: 0.4 }]}
-                        onPress={() => {
-                            if (app.cv_file) Linking.openURL(app.cv_file);
-                            else Alert.alert('Thông báo', 'Ứng viên chưa đính kèm CV.');
-                        }}
+                        style={[styles.cvBtn, (!app.cv_file || openingCv) && { opacity: 0.4 }]}
+                        onPress={openCvFile}
+                        disabled={!app.cv_file || openingCv}
                     >
-                        <MaterialCommunityIcons name="file-document-outline" size={18} color={COLORS.primary} />
+                        {openingCv ? (
+                            <ActivityIndicator size="small" color={COLORS.primary} />
+                        ) : (
+                            <MaterialCommunityIcons name="file-document-outline" size={18} color={COLORS.primary} />
+                        )}
                         <Text style={[styles.cvBtnText, { color: COLORS.primary }]}>
-                            {app.cv_file ? 'Mở CV' : 'Chưa có CV'}
+                            {openingCv ? 'Đang mở...' : (app.cv_file ? 'Mở CV' : 'Chưa có CV')}
                         </Text>
                     </TouchableOpacity>
                 </View>

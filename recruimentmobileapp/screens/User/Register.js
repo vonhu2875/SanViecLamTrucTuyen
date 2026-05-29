@@ -27,7 +27,12 @@ const Register = ({ navigation }) => {
             return;
         }
 
-        let result = await ImagePicker.launchImageLibraryAsync();
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
 
         if (!result.canceled) {
             setAvatar(result.assets[0]);
@@ -38,10 +43,36 @@ const Register = ({ navigation }) => {
         return password !== confirmPassword && confirmPassword.length > 0;
     };
 
+    const isValidEmail = (value) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value);
+    };
+
+    const isValidPhone = (value) => {
+        const phoneRegex = /^[0-9]{9,15}$/;
+        return phoneRegex.test(value);
+    };
+
+    const hasEmailError = () => {
+        return email.length > 0 && !isValidEmail(email);
+    };
+
+    const hasPhoneError = () => {
+        return phone.length > 0 && !isValidPhone(phone);
+    };
+
     // Hàm gửi FormData lên Django Backend
     const handleRegister = async () => {
         if (!username || !password || !email || !firstName || !lastName || !phone) {
             Alert.alert("Thông báo", "Vui lòng điền đầy đủ các trường thông tin bắt buộc!");
+            return;
+        }
+        if (!isValidEmail(email)) {
+            Alert.alert("Lỗi", "Email không hợp lệ. Vui lòng nhập theo định dạng tên@domain.com");
+            return;
+        }
+        if (!isValidPhone(phone)) {
+            Alert.alert("Lỗi", "Số điện thoại không hợp lệ. Vui lòng nhập 9-15 chữ số.");
             return;
         }
         if (password !== confirmPassword) {
@@ -83,7 +114,23 @@ const Register = ({ navigation }) => {
             }
         } catch (error) {
             console.error("Lỗi đăng ký:", error.response?.data || error.message);
-            Alert.alert("Lỗi hệ thống", "Không thể đăng ký. Hãy kiểm tra xem Username/Email có bị trùng lặp không!");
+            const errors = error.response?.data;
+
+            if (errors?.username) {
+                Alert.alert("Lỗi", errors.username[0]);
+            }
+
+            else if (errors?.email) {
+                Alert.alert("Lỗi", errors.email[0]);
+            }
+
+            else if (errors?.avatar) {
+                Alert.alert("Lỗi", `Avatar: ${errors.avatar[0]}`);
+            }
+
+            else {
+                Alert.alert("Lỗi", "Đăng ký thất bại!");
+            }
         } finally {
             setLoading(false);
         }
@@ -116,8 +163,15 @@ const Register = ({ navigation }) => {
                         <TextInput label="Tên" mode="outlined" value={firstName} onChangeText={setFirstName} style={[styles.input, { width: '48%' }]} activeOutlineColor="#F2A0B6" />
                     </View>
 
-                    <TextInput label="Số điện thoại" mode="outlined" keyboardType="phone-pad" value={phone} onChangeText={setPhone} style={styles.input} activeOutlineColor="#F2A0B6" />
-                    <TextInput label="Địa chỉ Email" mode="outlined" keyboardType="email-address" value={email} onChangeText={setEmail} style={styles.input} activeOutlineColor="#F2A0B6" />
+                    <TextInput label="Số điện thoại" mode="outlined" value={phone} onChangeText={setPhone} style={styles.input} activeOutlineColor="#F2A0B6" error={hasPhoneError()}
+                    />
+                    <HelperText type="error" visible={hasPhoneError()} >
+                        Số điện thoại phải gồm 9-15 chữ số.
+                    </HelperText>
+                    <TextInput label="Địa chỉ Email" mode="outlined" keyboardType="email-address" value={email} onChangeText={setEmail} style={styles.input} activeOutlineColor="#F2A0B6" error={hasEmailError()} />
+                    <HelperText type="error" visible={hasEmailError()}>
+                        Email không hợp lệ.
+                    </HelperText>
 
                     <Text style={styles.sectionLabel}>Thông tin tài khoản</Text>
                     <TextInput label="Tên tài khoản (Username)" mode="outlined" value={username} onChangeText={setUsername} style={styles.input} activeOutlineColor="#F2A0B6" />
@@ -166,8 +220,8 @@ const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: '#fff' },
     container: { padding: 20, paddingTop: 0 },
     title: { fontSize: 22, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 20 },
-    sectionLabel: { fontSize: 14, fontWeight: 'bold', color: '#666', marginTop: 15, marginBottom: 8 },
-    input: { marginBottom: 10, backgroundColor: '#fff' },
+    sectionLabel: { fontSize: 14, fontWeight: 'bold', color: '#666', marginTop: 0, marginBottom: 8 },
+    input: { marginBottom: 15, backgroundColor: '#fff' },
     radioContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
     radioItem: { flexDirection: 'row', alignItems: 'center' },
     radioText: { fontSize: 14, color: '#555', marginLeft: 5 },

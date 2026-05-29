@@ -13,13 +13,12 @@ import MyUserContext from '../../configs/Contexts';
 import Apis, { endpoints } from '../../configs/Apis';
 
 const CompanyDetail = ({ route, navigation }) => {
+    
     const [user] = useContext(MyUserContext);
-
     // companyId được truyền từ Profile (chỉ candidate/guest mới cần dùng)
     const companyId = route?.params?.companyId;
-
-    const isOwner = user?.role === 'employer';
-
+    const companyNow = user?.company?.id
+    const isOwner = user?.role === 'employer' && companyId === companyNow;
     // ─── State ───────────────────────────────────────────────
     const [company, setCompany] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -44,7 +43,7 @@ const CompanyDetail = ({ route, navigation }) => {
             const token = await AsyncStorage.getItem('token');
             let response;
 
-            if (isOwner) {
+            if (isOwner && !companyId) {
                 // Employer dùng current-company để luôn lấy đúng công ty của mình
                 response = await Apis.get(endpoints['current-company'], {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -113,8 +112,8 @@ const CompanyDetail = ({ route, navigation }) => {
                     type: 'image/jpeg'
                 });
             }
-
             // Employer chỉ được PATCH qua current-company
+            console.log(token)
             const response = await Apis.patch(endpoints['current-company'], form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',

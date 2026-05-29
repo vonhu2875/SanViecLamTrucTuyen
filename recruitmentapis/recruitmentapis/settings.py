@@ -66,7 +66,7 @@ MIDDLEWARE = [
 
 
 CORS_ALLOW_ALL_ORIGINS = True
-ALLOWED_HOSTS = ['192.168.2.21', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.2.21', '127.0.0.1', '10.50.26.203']
 OAUTH2_PROVIDER = {
     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore',
 }
@@ -99,7 +99,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'recruitmentdb',
         'USER': 'root',
-        'PASSWORD': 'Nhu...10c11c12cDHc',
+        'PASSWORD': 'root',
         'HOST': '' # mặc định localhost
     }
 }
@@ -144,7 +144,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'vi'
 
 TIME_ZONE = 'UTC'
 
@@ -163,5 +163,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CLIENT_ID = 'EBi1MkqKzOItn2QRxb4kT7HA7VYWVEpDl1baYIwQ'
-CLIENT_SECRET = 'RaVYSKih82FyqZBQQY9AluzpfzhaVdwnXtnKfJxhxBnxLwfY6wjvaPLVX14FAxXSiMWauUEd61bjJjaSxkGIikRkkS51U96tyFaupmDEQZMm9BdbsZWt8296gh9Adq7t'
+CLIENT_ID = 'D1GwBi5ne6mBy5iQEkWCD6aRmIMyOwOnrL0bRiTq'
+CLIENT_SECRET = 'e0xFQtFQvtWygQGb03RHQ18huH6i6NIlJLJEtqqOFDFUwd1qASylW23XnL6t8v68PjloUqbFzaB6EvqUidNDPwEDP3GPHbMBJbPD6cbpcOldBLW0S9yNfDcE9tGHEPqm'

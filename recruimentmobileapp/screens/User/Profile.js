@@ -91,7 +91,12 @@ const Profile = ({ navigation }) => {
         }
 
         // Mở thư viện chọn ảnh
-        let result = await ImagePicker.launchImageLibraryAsync();
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
 
         if (!result.canceled) {
             setAvatar(result.assets[0]); // Lưu thông tin file ảnh vào state
@@ -167,7 +172,7 @@ const Profile = ({ navigation }) => {
                     <Button 
                         mode="contained" 
                         buttonColor="#F2A0B6"
-                        onPress={() => dispatch({ "type": "LOGOUT" })} // Trả user về null để quay lại màn hình Login ban đầu
+                        onPress={() => dispatch({ "type": "LOGOUT" })}
                         style={{width: '60%', borderRadius: 12}}
                     >
                         Quay lại Đăng nhập

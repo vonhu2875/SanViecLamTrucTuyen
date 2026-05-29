@@ -231,7 +231,7 @@ const EmployerDashboard = () => {
                                     style={{ backgroundColor: job.active ? '#E8F5E9' : '#FEF3C7' }}
                                     textStyle={{ fontSize: 11, color: job.active ? '#10B981' : '#B45309' }}
                                 >
-                                    {job.active ? 'Đang tuyển' : 'Đã đóng'}
+                                    {job.active ? 'Đang tuyển' : 'Đã hết hạn'}
                                 </Chip>
                             </View>
                         </Card.Content>

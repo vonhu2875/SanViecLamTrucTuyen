@@ -61,6 +61,15 @@ class UserSerializer(ItemSerializer):
             )
         return email
 
+    def validate_username(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                "Username không được để trống"
+            )
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Tên tài khoản đã tồn tại.")
+        return value
+
 
     def create(self, validated_data):
         # 1. Lấy role ra để kiểm tra trước
@@ -69,7 +78,7 @@ class UserSerializer(ItemSerializer):
         # 2. GIỮ NGUYÊN: Gọi hàm này của Django để băm mật khẩu an toàn
         user = User.objects.create_user(**validated_data)
 
-        # 3. VIẾT THÊM: Nếu role là employer, tự động tạo hồ sơ công ty rỗng gắn với user vừa tạo
+        # 3.Nếu role là employer, tự động tạo hồ sơ công ty rỗng gắn với user vừa tạo
         if role == 'employer':
             Company.objects.create(
                 user=user,
@@ -100,7 +109,7 @@ class CompanySerializer(CompanySimpleSerializer):
         data = super().to_representation(instance)
         if instance.logo:
             data['logo'] = instance.logo.url
-
+        return data
         if instance.created_date:
             data['created_date'] = instance.created_date.strftime("%d/%m/%Y %H:%M:%S")
         if instance.updated_date:
@@ -135,6 +144,7 @@ class JobSimpleSerializer(serializers.ModelSerializer):
             'id', 'title', 'location', 'salary_min', 'salary_max',
             'deadline', 'is_featured', 'employer', 'category', 'active'
         ]
+
 class SkillSerializer(serializers.ModelSerializer):
     category_ids = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -187,6 +197,7 @@ class JobDetailSerializer(JobSimpleSerializer):
         salary_min = attrs.get('salary_min')
         salary_max = attrs.get('salary_max')
         deadline = attrs.get('deadline')
+        title = attrs.get('title')
 
         if salary_min is not None and salary_max is not None:
             if salary_min < 0 or salary_max < 0:
@@ -223,6 +234,24 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'status', 'employer_comment', 'created_date', 'candidate', 'company_name', 'job_location'
         ]
         read_only_fields = ['status', 'employer_comment', 'created_date']
+
+    def validate_cv_file(self, value):
+        if value:
+            # 1. Lấy tên file gốc (ví dụ: "my_cv.docx")
+            file_name = value.name.lower()
+
+            # 2. Định nghĩa các đuôi file hợp lệ (.doc, .docx)
+            valid_extensions = ['.doc', '.docx', '.pdf']
+
+            # 3. Kiểm tra xem file nộp vào có kết thúc bằng đuôi hợp lệ không
+            has_valid_extension = any(file_name.endswith(ext) for ext in valid_extensions)
+
+            if not has_valid_extension:
+                raise serializers.ValidationError(
+                    "Định dạng file không hợp lệ! Hệ thống chỉ chấp nhận file Word (.doc, .docx)."
+                )
+
+        return value
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

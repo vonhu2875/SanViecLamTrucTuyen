@@ -19,7 +19,7 @@ const Login = ({ navigation }) => {
 
     const validate = () => {
         if (!username.trim() || !password.trim()) {
-            setErr('Vui lòng nhập đầy đủ Tài khoản và Mật khẩu!');
+            Alert.alert('Lưu ý','Vui lòng nhập đầy đủ Tài khoản và Mật khẩu!');
             return false;
         }
         return true;
@@ -37,7 +37,10 @@ const Login = ({ navigation }) => {
                 });
                 await AsyncStorage.setItem('token', res.data.access_token);
                 let u = await authApis(res.data.access_token).get(endpoints['current-user']);
-                dispatch({ "type": "LOGIN", "payload": u.data });
+                dispatch({ 
+                    "type": "LOGIN", 
+                    "payload": u.data 
+                });
             } catch (error) {
                 console.error(error);
                 Alert.alert('Đăng nhập thất bại', 'Vui lòng kiểm tra lại!');
@@ -80,7 +83,7 @@ const Login = ({ navigation }) => {
                     />
 
                     {loading ? (
-                        <ActivityIndicator size="small" color="#F2A0B6" style={[Styles.input, { marginTop: 20 }]} />
+                        <ActivityIndicator size="small" color="#F2A0B6" style={[Styles.input, { marginTop: 20, backgroundColor: "#FFF0F2" }]} />
                     ) : (
                         <>
                         <Button mode="contained" onPress={handleLogin} buttonColor="#F2A0B6" style={Styles.button}>
