@@ -66,7 +66,11 @@ MIDDLEWARE = [
 
 
 CORS_ALLOW_ALL_ORIGINS = True
+<<<<<<< Updated upstream
 ALLOWED_HOSTS = ['192.168.2.21', '127.0.0.1', '10.50.26.203', '192.168.88.16']
+=======
+ALLOWED_HOSTS = ['192.168.2.21', '127.0.0.1', '10.50.26.203', '192.168.2.14', 'monotone-skewed-never.ngrok-free.dev']
+>>>>>>> Stashed changes
 OAUTH2_PROVIDER = {
     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore',
 }
@@ -99,7 +103,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'recruitmentdb',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': 'Nhu...10c11c12cDHc',
         'HOST': '' # mặc định localhost
     }
 }
@@ -163,5 +167,16 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+<<<<<<< Updated upstream
 CLIENT_ID = 'm66MctoEIJ1XOr6c4odnED4BmMdUkgT0J05rBDKf'
 CLIENT_SECRET = 'aPHH6EjDkpGsoA8JFyzVpeP3p4PXiZalMuxlMv02m37qIjMoRq5b9unE0M0oE0fyzDV915iQrk86snXXnTO9oNv8N62pbApq1fGx2hkXdl9qbAVHMVQpWxrDSDOX0MT1'
+=======
+CLIENT_ID = 'oCcEtF5clpB7sKa5FunVllYgnVUeiOOOkTEWJJLz'
+CLIENT_SECRET = 'bZq68mhshhVq4wvMOIn7I6550Dnt6uldlsJFoGFyXjgmxXhArPHYfUvt9qhkAo0ntRjQl4WcfYBX8W39aFMV9TjT6wpyvs71cN6DFq0zJSigyQGU7GBRuOAiirHLjRZD'
+
+# Cấu hình MoMo Sandbox lấy trực tiếp từ GitHub MoMo
+MOMO_PARTNER_CODE = "MOMO"
+MOMO_ACCESS_KEY = "F8BBA842ECF85"
+MOMO_SECRET_KEY = "K951B6PE1waDMi640xX08PD3vg6EkVlz"
+MOMO_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create"
+>>>>>>> Stashed changes

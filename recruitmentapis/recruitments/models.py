@@ -112,30 +112,35 @@ class SavedJob(BaseModel):
     def __str__(self):
         return f"{self.user.username} saved {self.job.title}"
 
-# Payment(Để mở rộng thôi -> Sẽ xem xét lại)
+
+# Trong models.py của bạn
 class Payment(BaseModel):
     METHOD_CHOICES = [
-        ('paypal', 'PayPal'),
-        ('stripe', 'Stripe'),
         ('momo', 'MoMo'),
-        ('zalopay', 'ZaloPay'),
-        ('cash', 'Cash'),
+        ('paypal', 'PayPal'),
     ]
 
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('success', 'Success'),
-        ('failed', 'Failed'),
+        ('pending', 'Đang xử lý'),
+        ('success', 'Thành công'),
+        ('failed', 'Thất bại'),
+    ]
+
+    PACKAGE_CHOICES = [
+        ('featured_job', 'Gói đẩy tin nổi bật (Nhà tuyển dụng)'),
+        ('compare_job', 'Gói so sánh công việc (Ứng viên)'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='payments', null=True, blank=True)
 
-    method = models.CharField(max_length=50, choices=METHOD_CHOICES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    order_id = models.CharField(max_length=100, unique=True)
 
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    description = models.CharField(max_length=255, blank=True, null=True)
+    package_type = models.CharField(max_length=50, choices=PACKAGE_CHOICES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    method = models.CharField(max_length=20, choices=METHOD_CHOICES, default='momo')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    description = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.amount}"
+        return f"{self.user.username} - {self.package_type} - {self.amount}VND"

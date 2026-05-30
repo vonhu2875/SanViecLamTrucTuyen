@@ -30,15 +30,26 @@ class SimpleUserSerializer(ItemSerializer):
 
 
 class UserSerializer(ItemSerializer):
+    # 🌟 ĐÂY NÈ: Khai báo một trường "ảo" chỉ xuất hiện lúc trả dữ liệu JSON về cho App
+    has_compare_package = serializers.SerializerMethodField()
     company = CompanyShortSerializer(read_only=True)
     class Meta:
         model = SimpleUserSerializer.Meta.model
-        fields = SimpleUserSerializer.Meta.fields + ['id', 'username', 'role', 'password', 'company']
+        fields = SimpleUserSerializer.Meta.fields + ['id', 'username', 'role', 'password', 'company', 'has_compare_package']
         extra_kwargs = {
             'password': {
                 'write_only': True
             }
         }
+
+    def get_has_compare_package(self, obj):
+        # obj chính là cái thằng User đang đăng nhập hiện tại
+        # Hàm này sẽ vào bảng Payment quét xem thằng User này đã có hóa đơn 'compare_job' nào 'success' chưa
+        return Payment.objects.filter(
+            user=obj,
+            package_type='compare_job',
+            status='success'
+        ).exists()  # Nếu có rồi thì trả về True, chưa có trả về False
 
     def validate_role(self, role):
         if role == 'admin':

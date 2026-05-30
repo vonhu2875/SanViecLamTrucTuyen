@@ -1,10 +1,13 @@
 import axios from "axios";
 
+<<<<<<< Updated upstream
 const HOST = "http://192.168.88.16:8000"
+=======
+const HOST = "http://192.168.2.14:8000"
+>>>>>>> Stashed changes
 export const endpoints = {
     'register': '/users/',
     'login': '/o/token/',
-    'google-login': '/auth/google/',
     'current-user': '/users/current-user/',
     'companies': '/companies/',
     'current-company': '/companies/current-company/',
@@ -20,7 +23,8 @@ export const endpoints = {
     'employer-jobs': '/jobs/', 
     'applications': '/applications/',
     'review-application': (id) => `/applications/${id}/review/`,
-    'employer-stats': '/stats/employer-stats/'
+    'employer-stats': '/stats/employer-stats/',
+    'momo-payment': '/payments/create-momo-order/'
 };
 
 export const authApis = (token) => {

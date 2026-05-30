@@ -129,13 +129,28 @@ function MainTabs() {
   );
 }
 
+const linking = {
+  prefixes: ['recruitmentsapp://'], 
+  config: {
+    screens: {
+      CompareJobs: 'momo-return', 
+    },
+  },
+};
+
 export default function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
  
   return (
     <PaperProvider>
+<<<<<<< Updated upstream
       <MyUserContext.Provider value={[user, dispatch]}>
           <NavigationContainer>
+=======
+      <MyUserContext.Provider value={[user, dispatch]}>        
+        <EmployerProvider> 
+          <NavigationContainer linking={linking}>
+>>>>>>> Stashed changes
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               {user === null ? (
                 <>
@@ -149,44 +164,47 @@ export default function App() {
                   }} />
                 </>
               ) : (
+                <>
                 <Stack.Screen name="MainApp" component={MainTabs} />
+                <Stack.Screen name="JobDetail" component={JobDetail} options={{ 
+                  headerShown: true,
+                  title: 'Chi tiết công việc',
+                  headerTintColor: '#F2A0B6'
+                }} />
+                <Stack.Screen name="CompareJobs" component={CompareScreen} options={{ 
+                  headerShown: true,
+                  title: 'So sánh công việc',
+                  headerTintColor: '#F2A0B6'
+                }} />
+                <Stack.Screen name="ApplyJob" component={ApplyJob} options={{ 
+                  headerShown: true, 
+                  title: 'Nộp hồ sơ ứng tuyển',
+                  headerTintColor: '#F2A0B6'
+                }} />
+                <Stack.Screen name="PostJob" component={PostJob} options={{ 
+                  headerShown: true,
+                  headerTintColor: '#F2A0B6',
+                  title: 'Đăng Tin Tuyển Dụng',
+                }} />
+                <Stack.Screen name="StackApplicantList" component={ApplicantList} options={{
+                  headerShown: true,
+                  headerTintColor: '#F2A0B6',
+                  title: 'Danh sách ứng viên',
+                }} />
+                <Stack.Screen name="ApplicationDetail" component={ApplicationDetail} options={{ 
+                  headerShown: true,
+                  title: 'Chi tiết hồ sơ',
+                  headerTintColor: '#F2A0B6'
+                }} />
+                <Stack.Screen name="CompanyDetail" component={CompanyDetail} options={{ 
+                  headerShown: true,
+                  title: 'Thông tin công ty',
+                  headerTintColor: '#F2A0B6'
+                  }} />
+                </>
               )}
  
-              <Stack.Screen name="JobDetail" component={JobDetail} options={{ 
-                headerShown: true,
-                title: 'Chi tiết công việc',
-                headerTintColor: '#F2A0B6'
-              }} />
-              <Stack.Screen name="CompareJobs" component={CompareScreen} options={{ 
-                headerShown: true,
-                title: 'So sánh công việc',
-                headerTintColor: '#F2A0B6'
-              }} />
-              <Stack.Screen name="ApplyJob" component={ApplyJob} options={{ 
-                headerShown: true, 
-                title: 'Nộp hồ sơ ứng tuyển',
-                headerTintColor: '#F2A0B6'
-              }} />
-              <Stack.Screen name="PostJob" component={PostJob} options={{ 
-                headerShown: true,
-                headerTintColor: '#F2A0B6',
-                title: 'Đăng Tin Tuyển Dụng',
-              }} />
-              <Stack.Screen name="StackApplicantList" component={ApplicantList} options={{
-                headerShown: true,
-                headerTintColor: '#F2A0B6',
-                title: 'Danh sách ứng viên',
-              }} />
-              <Stack.Screen name="ApplicationDetail" component={ApplicationDetail} options={{ 
-                headerShown: true,
-                title: 'Chi tiết hồ sơ',
-                headerTintColor: '#F2A0B6'
-              }} />
-              <Stack.Screen name="CompanyDetail" component={CompanyDetail} options={{ 
-                headerShown: true,
-                title: 'Thông tin công ty',
-                headerTintColor: '#F2A0B6'
-                }} />
+              
             </Stack.Navigator>
           </NavigationContainer>
       </MyUserContext.Provider>

@@ -1,10 +1,12 @@
 from datetime import datetime, date
 
+from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics, parsers, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
+
 from recruitments.models import User, Company, Application, SavedJob, Job, Category, Skill, Payment
 from recruitments import serializers
 from recruitments import perms, paginators
@@ -417,23 +419,184 @@ class StatsViewSet(viewsets.ViewSet):
         return Response(data, status=status.HTTP_200_OK)
 
 
+import time
+import urllib.parse
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import viewsets, permissions, status
+from .momo_services import create_momo_payment
+from recruitments.models import Payment, Job
 
-class PaymentViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
-    queryset = Payment.objects.filter(active=True)
-    serializer_class = serializers.PaymentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class PaymentViewSet(viewsets.ViewSet):
+    @action(methods=['post'], detail=False, url_path='create-momo-order')
+    def create_momo_order(self, request):
+        user = request.user
+        package_type = request.data.get('package_type')  # 'featured_job' hoặc 'compare_job'
+        job_id = request.data.get('job_id', None)  # Chỉ cần nếu là gói featured_job
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff or user.role == 'admin':
-            return Payment.objects.filter(active=True)
-        # Người dùng chỉ thấy lịch sử thanh toán hóa đơn của chính mình
-        return Payment.objects.filter(user=user, active=True)
+        # 1. Thiết lập giá tiền cứng cho các gói
+        if package_type == 'featured_job':
+            amount = 10000
+            order_info = f"Thanh toan day tin noi bat cho Job ID {job_id}"
+            if not job_id:
+                return Response({"error": "Vui lòng cung cấp job_id để đẩy tin nổi bật"},
+                                status=status.HTTP_400_BAD_REQUEST)
+        elif package_type == 'compare_job':
+            amount = 5000
+            order_info = "Thanh toan goi so sanh cong viec cho ung vien"
+        else:
+            return Response({"error": "Gói dịch vụ không hợp lệ"}, status=status.HTTP_400_BAD_REQUEST)
 
-    def perform_create(self, serializer):
-        # Mặc định hóa đơn tạo ra ở trạng thái 'success' (Hoặc 'pending' tùy luồng tích hợp của bạn)
-        # Gắn user hiện tại vào hóa đơn thanh toán công việc
-        serializer.save(
-            user=self.request.user,
-            status='pending'
+        # Tạo mã đơn hàng duy nhất bằng timestamp + ID người dùng
+        order_id = f"PAY_{user.id}_{int(time.time())}"
+
+        # 🌟 ĐỊA CHỈ QUAY VỀ: Khớp với Deep Link cấu hình trong App.js của React Native
+        return_url = "exp://192.168.2.14:8081/--/momo-return"
+
+        # Webhook URL (Bắn ngầm kết quả) - Nhớ sửa lại IP nếu test điện thoại thật nhé!
+        notify_url = "https://monotone-skewed-never.ngrok-free.dev/momo-webhook/"
+
+        # 2. Gọi hàm ở Bước 1 để xin link từ MoMo
+        momo_response = create_momo_payment(order_id, amount, order_info, return_url, notify_url)
+
+        # 🌟 CHỈ DÙNG 1 KHỐI IF DUY NHẤT ĐÃ ĐƯỢC CẢI TIẾN 🌟
+        if momo_response.get('resultCode') == 0:  # Khởi tạo thành công
+            # 3. Lưu đơn hàng vào MySQL ở trạng thái chờ (pending)
+            Payment.objects.create(
+                user=user,
+                job_id=job_id,
+                order_id=order_id,
+                package_type=package_type,
+                amount=amount,
+                method='momo',
+                status='pending',
+                description=order_info
+            )
+
+            # --- 🌟 XỬ LÝ CHỐNG NULL DEEPLINK ---
+            # Thử lấy đúng tên biến chuẩn của MoMo (chữ L viết hoa) xem có không
+            deeplink = momo_response.get('deeplink')
+            pay_url = momo_response.get('payUrl')
+
+            # Nếu MoMo trả về null, ta tự "chế" deeplink hướng thẳng vào App MoMo UTA
+            if not deeplink and pay_url:
+                # 🌟 THAY 'momo://' THÀNH 'momodevelopment://'
+                deeplink = f"momodevelopment://?action=goforward&page=app&url={urllib.parse.quote(pay_url)}"
+
+            # 4. Trả dữ liệu an toàn về cho React Native Frontend
+            return Response({
+                "deeplink": deeplink,
+                "payUrl": pay_url,
+                "orderId": order_id
+            }, status=status.HTTP_200_OK)
+
+        return Response({"error": momo_response.get('message', 'Lỗi kết nối cổng MoMo')},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+
+import hmac
+import hashlib
+import urllib.parse  # Cần thiết cho đoạn decode/encode chuỗi URL ở hàm tạo đơn hàng
+from django.conf import settings
+from rest_framework.views import APIView
+class MomoWebhookView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        data = request.data
+        print("📥 Dữ liệu nhận từ MoMo/Frontend:", data)
+
+        order_id = str(data.get('orderId', ''))
+        result_code = str(data.get('resultCode', ''))
+
+        # 🌟 MẸO BYPASS CHO DEV: Nếu request do chính Frontend React Native tự bắn lên để test
+        # (Frontend gửi kèm message đặc biệt hoặc không có signature của MoMo)
+        is_frontend_test = data.get('message') == "Bypass test thành công qua App MoMo" or not data.get('signature')
+
+        if is_frontend_test:
+            print("🛠️ Phát hiện Request Test từ Frontend! Bỏ qua kiểm tra chữ ký bảo mật...")
+            try:
+                # Tìm đơn hàng và xử lý lưu Database luôn
+                payment = Payment.objects.get(order_id=order_id)
+
+                if result_code == "0":
+                    payment.status = 'success'
+                    payment.save()
+
+                    # 🌟 SỬA TẠI ĐÂY: Lưu trực tiếp quyền sở hữu vào bảng User để API current-user đọc được
+                    user = payment.user
+                    user.has_compare_package = True
+                    user.save()
+
+                    print(f"✅ [TEST] Đã mở khóa tính năng và lưu DB cho User: {user.username}")
+                    return Response({"message": "Bypass & Cập nhật DB thành công"}, status=status.HTTP_200_OK)
+                else:
+                    payment.status = 'failed'
+                    payment.save()
+                    return Response({"message": "Bypass giao dịch thất bại"}, status=status.HTTP_200_OK)
+            except Payment.DoesNotExist:
+                return Response({"error": "Không tìm thấy đơn hàng"}, status=status.HTTP_404_NOT_FOUND)
+
+        # =========================================================================
+        # LUỒNG XỬ LÝ CHÍNH THỨC TỪ SERVER MOMO THẬT (GIỮ NGUYÊN BẢO MẬT CHỮ KÝ)
+        # =========================================================================
+        momo_signature = data.get('signature')
+        access_key = settings.MOMO_ACCESS_KEY
+        secret_key = settings.MOMO_SECRET_KEY
+
+        amount = str(data.get('amount', ''))
+        order_info = str(data.get('orderInfo', ''))
+        order_type = str(data.get('orderType', ''))
+        trans_id = str(data.get('transId', ''))
+        message = str(data.get('message', ''))
+        pay_type = str(data.get('payType', ''))
+        response_id = str(data.get('responseId', ''))
+        extra_data = str(data.get('extraData', ''))
+
+        raw_signature = (
+            f"accessKey={access_key}&amount={amount}&extraData={extra_data}&message={message}"
+            f"&orderId={order_id}&orderInfo={order_info}&orderType={order_type}"
+            f"&payType={pay_type}&requestId={order_id}&responseId={response_id}"
+            f"&resultCode={result_code}&transId={trans_id}"
         )
+
+        try:
+            our_signature = hmac.new(
+                secret_key.encode('utf-8'),
+                raw_signature.encode('utf-8'),
+                hashlib.sha256
+            ).hexdigest()
+
+            if our_signature != momo_signature:
+                print("🚨 LỖI: Chữ ký MoMo không khớp!")
+                return Response({"error": "Chữ ký không hợp lệ!"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Chữ ký hợp lệ -> Tiến hành lưu DB thật từ MoMo Server
+            payment = Payment.objects.get(order_id=order_id)
+
+            if result_code == "0":
+                payment.status = 'success'
+                payment.save()
+
+                # Đẩy tin nổi bật
+                if payment.package_type == 'featured_job' and payment.job:
+                    job = payment.job
+                    job.is_featured = True
+                    job.save()
+                # Kích hoạt gói so sánh
+                elif payment.package_type == 'compare_job':
+                    user = payment.user
+                    user.has_compare_package = True
+                    user.save()
+
+                print(f"💰 [MOMO REAL] Đơn hàng {order_id} thành công! Đã ghi lịch sử vào DB.")
+                return Response({"message": "Cập nhật trạng thái thành công"}, status=status.HTTP_200_OK)
+            else:
+                payment.status = 'failed'
+                payment.save()
+                return Response({"message": "Giao dịch thất bại"}, status=status.HTTP_200_OK)
+
+        except Payment.DoesNotExist:
+            return Response({"error": "Không tìm thấy đơn hàng"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Lỗi hệ thống: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
