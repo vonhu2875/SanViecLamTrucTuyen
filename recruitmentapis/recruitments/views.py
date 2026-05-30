@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics, parsers, status, permissions, filters

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, Image, SafeAreaView, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { Card, Text, Searchbar, Chip, IconButton, Button, TextInput, Avatar } from 'react-native-paper';
 import MyUserContext from '../../configs/Contexts'; 
@@ -44,6 +44,19 @@ const Home = ({ navigation }) => {
     // State phục vụ phân trang vô tận
     const [nextPageUrl, setNextPageUrl] = useState(null);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [showScrollTop, setShowScrollTop] = useState(false);
+    const flatListRef = useRef(null);
+
+    const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 20 }).current;
+    const onViewableItemsChanged = useRef(({ viewableItems }) => {
+        if (viewableItems.length === 0) return;
+        const topIndex = Math.min(...viewableItems.map(v => v.index ?? 0));
+        setShowScrollTop(topIndex >= 10);
+    }).current;
+
+    const scrollToTop = () => {
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+    };
 
     // 🌟 1. Hàm lấy danh sách danh mục ngành nghề từ Backend khi vào App
     const fetchCategories = async () => {
@@ -61,6 +74,7 @@ const Home = ({ navigation }) => {
             if (!isRefresh) 
                 setLoading(true);
             setNextPageUrl(null);
+            setShowScrollTop(false);
 
             const params = new URLSearchParams();
             if (searchQuery) 
@@ -306,6 +320,7 @@ const Home = ({ navigation }) => {
                 </View>
             ) : (
                 <FlatList
+                    ref={flatListRef}
                     data={jobs}
                     renderItem={renderJobItem}
                     keyExtractor={item => item.id.toString()}
@@ -316,7 +331,9 @@ const Home = ({ navigation }) => {
                     refreshing={loading}
                     onRefresh={() => fetchJobs(true)}
                     onEndReached={loadMoreJobs}
-                    onEndReachedThreshold={0.1} 
+                    onEndReachedThreshold={0.1}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    viewabilityConfig={viewabilityConfig}
                     initialNumToRender={6}
                     maxToRenderPerBatch={10}
                     ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#F2A0B6" style={{ marginVertical: 10 }} /> : null}
@@ -324,6 +341,18 @@ const Home = ({ navigation }) => {
                         <Text style={styles.emptyText}>Hiện tại chưa có công việc nào phù hợp.</Text>
                     }
                 />
+            )}
+            {showScrollTop && (
+                <TouchableOpacity
+                    style={[
+                        styles.scrollTopBtn,
+                        hasCompareBar && styles.scrollTopBtnWithCompareBar,
+                    ]}
+                    onPress={scrollToTop}
+                    activeOpacity={0.85}
+                >
+                    <IconButton icon="arrow-up" iconColor="#fff" size={22} style={{ margin: 0 }} />
+                </TouchableOpacity>
             )}
             {/* FLOATING BAR SO SÁNH */}
             {hasCompareBar && (
@@ -475,6 +504,26 @@ const styles = StyleSheet.create({
         maxWidth: 140,
     },
     floatingBadgeText: { fontSize: 11, color: '#fff' },
+
+    scrollTopBtn: {
+        position: 'absolute',
+        right: 20,
+        bottom: 24,
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#F2A0B6',
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 6,
+        shadowColor: '#F2A0B6',
+        shadowOpacity: 0.35,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+    },
+    scrollTopBtnWithCompareBar: {
+        bottom: 170,
+    },
 });
 
 export default Home;

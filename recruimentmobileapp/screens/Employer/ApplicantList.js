@@ -1,6 +1,6 @@
 // screens/Employer/ApplicantList.js
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, FlatList, TouchableOpacity, RefreshControl, StyleSheet, ScrollView } from 'react-native';
+import { View, FlatList, TouchableOpacity, RefreshControl, StyleSheet, ScrollView, DeviceEventEmitter } from 'react-native'; // <--- Đã thêm DeviceEventEmitter
 import { Text, Avatar, ActivityIndicator, Searchbar, Icon } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -88,6 +88,17 @@ const ApplicantList = () => {
         setApps(prev => prev.map(a => a.id === updatedApplication.id ? { ...a, ...updatedApplication } : a));
     };
 
+    // <--- THÊM MỚI: Lắng nghe sự kiện từ DeviceEventEmitter
+    useEffect(() => {
+        const subscription = DeviceEventEmitter.addListener('onApplicationUpdate', (updatedApp) => {
+            handleStatusUpdate(updatedApp);
+        });
+
+        return () => {
+            subscription.remove(); // Dọn dẹp khi unmount
+        };
+    }, []);
+
     const renderItem = ({ item }) => {
         const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.pending;
         const candidateName = (item.candidate?.first_name || item.candidate?.last_name)
@@ -101,7 +112,7 @@ const ApplicantList = () => {
                 onPress={() => navigation.navigate('ApplicationDetail', {
                     application: item,
                     jobTitle,
-                    onStatusUpdate: handleStatusUpdate,
+                    // <--- Đã xóa onStatusUpdate ở đây
                 })}
             >
                 {/* Avatar + Info */}
@@ -129,7 +140,7 @@ const ApplicantList = () => {
                     </View>
                 </View>
 
-                {/* Status chip + Ngày — cùng 1 hàng, căn đều */}
+                {/* Status chip + Ngày */}
                 <View style={styles.cardMeta}>
                     <View style={[styles.statusPill, { backgroundColor: cfg.bg }]}>
                         <Text style={[styles.statusPillText, { color: cfg.color }]}>
@@ -220,8 +231,6 @@ const styles = StyleSheet.create({
     root: { flex: 1, backgroundColor: '#F9FAFB' },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     searchbar: { margin: 12, marginBottom: 8, backgroundColor: '#fff', elevation: 1, borderRadius: 10 },
-
-    // Filter chips — dùng TouchableOpacity thay Chip để kiểm soát size tốt hơn
     categoryContainer: {
         paddingHorizontal: 12,
         paddingVertical: 5,
@@ -238,8 +247,8 @@ const styles = StyleSheet.create({
         elevation: 1,
     },
     activeCategoryTab: {
-        backgroundColor: COLORS.primaryLight || '#FFEBF0', // Nền hồng nhạt
-        borderColor: COLORS.primary, // Viền hồng đậm
+        backgroundColor: COLORS.primaryLight || '#FFEBF0', 
+        borderColor: COLORS.primary, 
     },
     categoryTabText: {
         fontSize: 13,
@@ -247,11 +256,9 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     activeCategoryTabText: {
-        color: COLORS.primary, // Chữ hồng đậm
+        color: COLORS.primary, 
         fontWeight: 'bold',
     },
-
-    // Card
     card: {
         backgroundColor: '#fff', borderRadius: 12,
         padding: 14, marginBottom: 10,
@@ -262,18 +269,16 @@ const styles = StyleSheet.create({
     cardName: { fontSize: 15, fontWeight: '700', color: '#111827' },
     cardEmail: { fontSize: 12, color: '#6B7280', marginTop: 1 },
     cardJobContainer: {
-    flexDirection: 'row',  // 🌟 BẮT BUỘC: Ép icon và chữ phải nằm trên cùng một hàng ngang
-    alignItems: 'center',  // Giúp icon và chữ căn giữa đều nhau, không bị lệch lên lệch xuống
-    gap: 6,                // Tạo khoảng cách trống vừa phải giữa icon và chữ
-    marginTop: 4,          // Khoảng cách với dòng phía trên nó
+        flexDirection: 'row',  
+        alignItems: 'center',  
+        gap: 6,                
+        marginTop: 4,          
     },
     cardJob: {
         fontSize: 12,
         color: '#6B7280',
-        flex: 1,               // 🌟 BẮT BUỘC: Đoạn này giúp chữ tự động co giãn, nếu dài quá sẽ hiện "..." chứ không đẩy hàng
+        flex: 1,               
     },
-
-    // Status + date — hàng riêng, không dùng Chip (tránh bị lệch height)
     cardMeta: {
         flexDirection: 'row', alignItems: 'center',
         justifyContent: 'space-between', marginBottom: 4,
@@ -285,7 +290,6 @@ const styles = StyleSheet.create({
     statusPillText: { fontSize: 12, fontWeight: '600' },
     cardDate: { fontSize: 12, color: '#9CA3AF' },
     cardCover: { fontSize: 12, color: '#9CA3AF', fontStyle: 'italic', marginTop: 6, lineHeight: 17 },
-
     empty: { alignItems: 'center', marginTop: 60, gap: 12 },
     emptyText: { color: '#9CA3AF', fontSize: 14 },
 });

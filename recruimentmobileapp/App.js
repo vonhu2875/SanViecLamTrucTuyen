@@ -7,7 +7,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 // Import chuẩn 100% theo các file của bà
 import MyUserContext from './configs/Contexts';
 import MyUserReducer from './reducers/reducers';
-import { EmployerProvider } from './configs/EmployerContext';
 
 // Các màn hình Auth
 import Splash from './screens/User/Splash'; 
@@ -135,8 +134,7 @@ export default function App() {
  
   return (
     <PaperProvider>
-      <MyUserContext.Provider value={[user, dispatch]}>        
-        <EmployerProvider> 
+      <MyUserContext.Provider value={[user, dispatch]}>
           <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               {user === null ? (
@@ -191,7 +189,6 @@ export default function App() {
                 }} />
             </Stack.Navigator>
           </NavigationContainer>
-        </EmployerProvider>
       </MyUserContext.Provider>
     </PaperProvider>
   );
